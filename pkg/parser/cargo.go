@@ -17,6 +17,7 @@ package parser
 
 import (
 	"github.com/BurntSushi/toml"
+
 	"github.com/stacklok/trusty-sdk-go/pkg/types"
 )
 

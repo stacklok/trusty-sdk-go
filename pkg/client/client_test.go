@@ -23,8 +23,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stacklok/trusty-sdk-go/pkg/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/stacklok/trusty-sdk-go/pkg/types"
 )
 
 // fakeClient mocks the http client used by the trusty client
