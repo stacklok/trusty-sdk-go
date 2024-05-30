@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package githubapi offers some utility functions to interact with GitHub from
+// the Trusty libraries.
 package githubapi
 
 import (

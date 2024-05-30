@@ -22,6 +22,7 @@ import (
 
 // TestConvertDepsToMap tests the ConvertDepsToMap function for converting a slice of Dependency structs to a map
 func TestConvertDepsToMap(t *testing.T) {
+	t.Parallel()
 	deps := []Dependency{
 		{Name: "dep1", Version: "1.0"},
 		{Name: "dep2", Version: "2.0"},
@@ -40,6 +41,7 @@ func TestConvertDepsToMap(t *testing.T) {
 
 // TestDiffDependencies tests the DiffDependencies function for finding added dependencies
 func TestDiffDependencies(t *testing.T) {
+	t.Parallel()
 	oldDeps := map[string]string{
 		"dep1": "1.0",
 	}
