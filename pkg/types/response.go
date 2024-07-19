@@ -18,12 +18,28 @@ import "time"
 
 // Reply is the response from the package report API
 type Reply struct {
-	PackageName  string           `json:"package_name"`
-	PackageType  string           `json:"package_type"`
-	Summary      ScoreSummary     `json:"summary"`
-	Alternatives AlternativesList `json:"alternatives"`
-	PackageData  PackageData      `json:"package_data"`
-	Provenance   *Provenance      `json:"provenance"`
+	PackageName    string           `json:"package_name"`
+	PackageType    string           `json:"package_type"`
+	PackageVersion string           `json:"package_version"`
+	Status         string           `json:"status"`
+	Summary        ScoreSummary     `json:"summary"`
+	Provenance     *Provenance      `json:"provenance"`
+	Activity       *Activity        `json:"activity"`
+	Typosquatting  *Typosquatting   `json:"typosquatting"`
+	Alternatives   AlternativesList `json:"alternatives"`
+	PackageData    PackageData      `json:"package_data"`
+}
+
+// Activity captures a package's activity score
+type Activity struct {
+	Score       float64 `json:"score"`
+	Description string  `json:"description"`
+}
+
+// Typosquatting score for the package's name
+type Typosquatting struct {
+	Score       float64 `json:"score"`
+	Description string  `json:"description"`
 }
 
 // Alternative is an alternative package returned from the package intelligence API
