@@ -17,6 +17,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,14 +29,32 @@ import (
 	"github.com/stacklok/trusty-sdk-go/pkg/types"
 )
 
-// fakeClient mocks the http client used by the trusty client
-type fakeClient struct {
-	resp *http.Response
-	err  error
+func newFakeClient() *fakeClient {
+	return &fakeClient{
+		resps: []*http.Response{},
+		errs:  []error{},
+	}
 }
 
-func (fc *fakeClient) Do(_ *http.Request) (*http.Response, error) {
-	return fc.resp, fc.err
+// fakeClient mocks the http client used by the trusty client
+type fakeClient struct {
+	resps []*http.Response
+	errs  []error
+}
+
+func (fc *fakeClient) GetRequest(_ string) (response *http.Response, err error) {
+	if len(fc.resps) != 0 {
+		response = fc.resps[0]
+	}
+
+	if len(fc.errs) != 0 {
+		err = fc.errs[0]
+	}
+	return response, err
+}
+
+func (fc *fakeClient) GetRequestGroup(_ []string) (response []*http.Response, errs []error) {
+	return fc.resps, fc.errs
 }
 
 func buildReader(s string) io.ReadCloser {
@@ -63,10 +82,10 @@ func TestReport(t *testing.T) {
 			name: "normal",
 			dep:  testdep,
 			prepare: func(fc *fakeClient) {
-				fc.resp = &http.Response{
+				fc.resps = append(fc.resps, &http.Response{
 					StatusCode: http.StatusOK,
 					Body:       buildReader(respBody),
-				}
+				})
 			},
 			expected: &types.Reply{
 				PackageName: "requestts",
@@ -93,7 +112,7 @@ func TestReport(t *testing.T) {
 			name: "http-fails",
 			dep:  testdep,
 			prepare: func(fc *fakeClient) {
-				fc.err = fmt.Errorf("fake error")
+				fc.errs = append(fc.errs, fmt.Errorf("fake error"))
 			},
 			mustErr: true,
 		},
@@ -101,11 +120,11 @@ func TestReport(t *testing.T) {
 			name: "http-non-200",
 			dep:  testdep,
 			prepare: func(fc *fakeClient) {
-				fc.resp = &http.Response{
+				fc.resps = append(fc.resps, &http.Response{
 					Body:       buildReader(respBody),
 					Status:     "Not found",
 					StatusCode: 404,
-				}
+				})
 			},
 			mustErr: true,
 		},
@@ -113,11 +132,11 @@ func TestReport(t *testing.T) {
 			name: "bad-response-json",
 			dep:  testdep,
 			prepare: func(fc *fakeClient) {
-				fc.resp = &http.Response{
+				fc.resps = append(fc.resps, &http.Response{
 					Body:       buildReader("HEy Fr1end!"),
 					Status:     "OK",
 					StatusCode: 200,
-				}
+				})
 			},
 			mustErr: true,
 		},
@@ -125,7 +144,7 @@ func TestReport(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			fake := &fakeClient{}
+			fake := newFakeClient()
 			tc.prepare(fake)
 			client := &Trusty{
 				Options: Options{
@@ -143,6 +162,143 @@ func TestReport(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, res)
 			require.Equal(t, tc.expected.PackageName, res.PackageName)
+		})
+	}
+}
+
+func TestGroupReport(t *testing.T) {
+	t.Parallel()
+	respBody1 := `{"package_name":"requestts","package_type":"pypi"}`
+	respBody2 := `{"package_name":"tensorflow","package_type":"pypi"}`
+
+	testdep1 := &types.Dependency{
+		Name:      "requestts",
+		Ecosystem: 1,
+	}
+	testdep2 := &types.Dependency{
+		Name:      "tensorflow",
+		Ecosystem: 1,
+	}
+
+	for _, tc := range []struct {
+		name     string
+		deps     []*types.Dependency
+		prepare  func(*fakeClient)
+		expected []*types.Reply
+		mustErr  bool
+	}{
+		{
+			name: "normal",
+			deps: []*types.Dependency{testdep1, testdep2},
+			prepare: func(fc *fakeClient) {
+				fc.resps = append(fc.resps,
+					&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       buildReader(respBody1),
+					},
+					&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       buildReader(respBody2),
+					},
+				)
+			},
+			expected: []*types.Reply{
+				{
+					PackageName: "requestts",
+					PackageType: "pypi",
+				},
+				{
+					PackageName: "tensorflow",
+					PackageType: "pypi",
+				},
+			},
+		},
+
+		{
+			name: "no-dep-name",
+			deps: []*types.Dependency{
+				{Ecosystem: 1}, testdep1,
+			},
+			prepare: func(_ *fakeClient) {},
+			mustErr: true,
+		},
+		{
+			name: "no-dep-ecosystem",
+			deps: []*types.Dependency{
+				{Name: "test"}, testdep1,
+			},
+			prepare: func(_ *fakeClient) {},
+			mustErr: true,
+		},
+		{
+			name: "http-fails",
+			deps: []*types.Dependency{testdep1},
+			prepare: func(fc *fakeClient) {
+				fc.errs = append(fc.errs, fmt.Errorf("fake error"))
+			},
+			mustErr: true,
+		},
+		{
+			name: "http-non-200",
+			deps: []*types.Dependency{testdep1, testdep2},
+			prepare: func(fc *fakeClient) {
+				fc.resps = append(
+					fc.resps, &http.Response{
+						Body:       buildReader(respBody1),
+						Status:     "Not found",
+						StatusCode: 404,
+					},
+					&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       buildReader(respBody2),
+					},
+				)
+				fc.errs = append(
+					fc.errs, errors.New("HTTP Error"), nil,
+				)
+			},
+			mustErr: true,
+		},
+		{
+			name: "bad-response-json",
+			deps: []*types.Dependency{testdep1, testdep2},
+			prepare: func(fc *fakeClient) {
+				fc.resps = append(fc.resps,
+					&http.Response{
+						Body:       buildReader("HEy Fr1end!"),
+						Status:     "OK",
+						StatusCode: 200,
+					},
+					&http.Response{
+						StatusCode: http.StatusOK,
+						Body:       buildReader(respBody2),
+					},
+				)
+			},
+			mustErr: true,
+		},
+	} {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			fake := newFakeClient()
+			tc.prepare(fake)
+			client := &Trusty{
+				Options: Options{
+					HttpClient: fake,
+					BaseURL:    defaultEndpoint,
+				},
+			}
+
+			res, err := client.GroupReport(context.Background(), tc.deps)
+			if tc.mustErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, res)
+			require.Equal(t, tc.expected, res)
 		})
 	}
 }
@@ -188,6 +344,65 @@ func TestUrlFromEndpointAndPaths(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, tc.expected, res.String())
 
+		})
+	}
+}
+
+func TestPurlToDependency(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		name     string
+		purl     string
+		expected *types.Dependency
+		mustErr  bool
+	}{
+		{
+			name:     "golang",
+			purl:     "pkg:golang/github.com/k8s.io/release@v1.0.8",
+			expected: &types.Dependency{Name: "github.com/k8s.io/release", Version: "v1.0.8", Ecosystem: types.ECOSYSTEM_GO},
+			mustErr:  false,
+		},
+		{
+			name:     "pypi",
+			purl:     "pkg:pypi/requests@v1.2.3",
+			expected: &types.Dependency{Name: "requests", Version: "v1.2.3", Ecosystem: types.ECOSYSTEM_PYPI},
+			mustErr:  false,
+		},
+		{
+			name:     "npm",
+			purl:     "pkg:npm/%40react-stately/color@3.7.0",
+			expected: &types.Dependency{Name: "@react-stately/color", Version: "3.7.0", Ecosystem: types.ECOSYSTEM_NPM},
+			mustErr:  false,
+		},
+		{
+			name:     "no-version",
+			purl:     "pkg:npm/%40react-stately/color",
+			expected: &types.Dependency{Name: "@react-stately/color", Version: "", Ecosystem: types.ECOSYSTEM_NPM},
+			mustErr:  false,
+		},
+		{
+			name:    "unsupported-ecosystem",
+			purl:    "pkg:bugget/hello/there@1234",
+			mustErr: true,
+		},
+		{
+			name:    "invalid-purl",
+			purl:    "http:npm/hello/there@1234",
+			mustErr: true,
+		},
+	} {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			dep, err := New().PurlToDependency(tc.purl)
+			if tc.mustErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.expected.Ecosystem, dep.Ecosystem)
+			require.Equal(t, tc.expected.Name, dep.Name)
+			require.Equal(t, tc.expected.Version, dep.Version)
 		})
 	}
 }

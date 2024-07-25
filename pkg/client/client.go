@@ -25,11 +25,14 @@ import (
 	"os"
 	"strings"
 
+	packageurl "github.com/package-url/packageurl-go"
+	khttp "sigs.k8s.io/release-utils/http"
+
 	"github.com/stacklok/trusty-sdk-go/pkg/types"
 )
 
 const (
-	defaultEndpoint = "https://api.trustypkg.dev"
+	defaultEndpoint = "https://gh.trustypkg.dev"
 	endpointEnvVar  = "TRUSTY_ENDPOINT"
 	reportPath      = "v1/report"
 )
@@ -37,22 +40,28 @@ const (
 // Options configures the Trusty API client
 type Options struct {
 	HttpClient netClient
-	BaseURL    string
+	// Workers is the number of parallel request the client makes to the API
+	Workers int
+
+	// BaseURL of the Trusty API
+	BaseURL string
 }
 
 // DefaultOptions is the default Trusty client options set
 var DefaultOptions = Options{
-	HttpClient: &http.Client{},
-	BaseURL:    defaultEndpoint,
+	Workers: 2,
+	BaseURL: defaultEndpoint,
 }
 
 type netClient interface {
-	Do(req *http.Request) (*http.Response, error)
+	GetRequestGroup([]string) ([]*http.Response, []error)
+	GetRequest(string) (*http.Response, error)
 }
 
 // New returns a new Trusty REST client
 func New() *Trusty {
 	opts := DefaultOptions
+	opts.HttpClient = khttp.NewAgent().WithMaxParallel(opts.Workers).WithFailOnHTTPError(true)
 	if ep := os.Getenv(endpointEnvVar); ep != "" {
 		opts.BaseURL = ep
 	}
@@ -90,25 +99,52 @@ type Trusty struct {
 	Options Options
 }
 
-// newRequest buids a new http GET request using the preconfigured trusty API uri
-func (t *Trusty) newRequest(ctx context.Context, path string, params map[string]string) (*http.Request, error) {
-	u, err := urlFromEndpointAndPaths(t.Options.BaseURL, path, params)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse endpoint: %w", err)
+// GroupReport queries the Trusty API in parallel for a group of dependencies.
+func (t *Trusty) GroupReport(_ context.Context, deps []*types.Dependency) ([]*types.Reply, error) {
+	urls := []string{}
+	for _, dep := range deps {
+		u, err := t.PackageEndpoint(dep)
+		if err != nil {
+			return nil, fmt.Errorf("unable to get endpoint for: %q: %w", dep.Name, err)
+		}
+		urls = append(urls, u)
 	}
 
-	req, err := http.NewRequest("GET", u.String(), nil)
-	if err != nil {
-		return nil, fmt.Errorf("could not create request: %w", err)
+	responses, errs := t.Options.HttpClient.GetRequestGroup(urls)
+	if err := errors.Join(errs...); err != nil {
+		return nil, fmt.Errorf("fetching data from Trusty: %w", err)
 	}
-	req = req.WithContext(ctx)
-	return req, nil
+
+	// Parse the replies
+	resps := make([]*types.Reply, len(responses))
+	for i := range responses {
+		defer responses[i].Body.Close()
+		dec := json.NewDecoder(responses[i].Body)
+		resps[i] = &types.Reply{}
+		if err := dec.Decode(resps[i]); err != nil {
+			return nil, fmt.Errorf("could not unmarshal response #%d: %w", i, err)
+		}
+	}
+	return resps, nil
 }
 
-// Report returns a dependency report with all the data that Trust has
-// available for a package
-func (t *Trusty) Report(ctx context.Context, dep *types.Dependency) (*types.Reply, error) {
-	// Check dependency:
+// PurlEndpoint returns the API endpoint url to query for data about a purl
+func (t *Trusty) PurlEndpoint(purl string) (string, error) {
+	dep, err := t.PurlToDependency(purl)
+	if err != nil {
+		return "", fmt.Errorf("getting dependency from %q", purl)
+	}
+	ep, err := t.PackageEndpoint(dep)
+	if err != nil {
+		return "", fmt.Errorf("getting package endpoint: %w", err)
+	}
+	return ep, nil
+}
+
+// PackageEndpoint takes a dependency and returns the Trusty endpoint to
+// query data about it.
+func (t *Trusty) PackageEndpoint(dep *types.Dependency) (string, error) {
+	// Check dependency data:
 	errs := []error{}
 	if dep.Name == "" {
 		errs = append(errs, fmt.Errorf("dependency has no name defined"))
@@ -117,21 +153,76 @@ func (t *Trusty) Report(ctx context.Context, dep *types.Dependency) (*types.Repl
 		errs = append(errs, fmt.Errorf("dependency has no ecosystem set"))
 	}
 
-	preErr := errors.Join(errs...)
-	if preErr != nil {
-		return nil, preErr
+	if err := errors.Join(errs...); err != nil {
+		return "", err
+	}
+
+	u, err := url.Parse(t.Options.BaseURL + "/" + reportPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse endpoint: %w", err)
 	}
 
 	params := map[string]string{
 		"package_name": dep.Name,
 		"package_type": strings.ToLower(dep.Ecosystem.AsString()),
 	}
-	req, err := t.newRequest(ctx, reportPath, params)
-	if err != nil {
-		return nil, fmt.Errorf("could not create request: %w", err)
+
+	// Add query parameters for package_name and package_type
+	q := u.Query()
+	for k, v := range params {
+		q.Set(k, v)
+	}
+	u.RawQuery = q.Encode()
+
+	return u.String(), nil
+}
+
+// PurlToEcosystem returns a trusty ecosystem constant from a Package URL's type
+func (_ *Trusty) PurlToEcosystem(purl string) types.Ecosystem {
+	switch {
+	case strings.HasPrefix(purl, "pkg:golang"):
+		return types.ECOSYSTEM_GO
+	case strings.HasPrefix(purl, "pkg:npm"):
+		return types.ECOSYSTEM_NPM
+	case strings.HasPrefix(purl, "pkg:pypi"):
+		return types.ECOSYSTEM_PYPI
+	default:
+		return types.Ecosystem(0)
+	}
+}
+
+// PurlToDependency takes a string with a package url
+func (t *Trusty) PurlToDependency(purlString string) (*types.Dependency, error) {
+	e := t.PurlToEcosystem(purlString)
+	if e == 0 {
+		// Ecosystem nil or not supported
+		return nil, fmt.Errorf("ecosystem not supported")
 	}
 
-	resp, err := t.Options.HttpClient.Do(req)
+	purl, err := packageurl.FromString(purlString)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse package url: %w", err)
+	}
+	name := purl.Name
+	if purl.Namespace != "" {
+		name = purl.Namespace + "/" + purl.Name
+	}
+	return &types.Dependency{
+		Ecosystem: e,
+		Name:      name,
+		Version:   purl.Version,
+	}, nil
+}
+
+// Report returns a dependency report with all the data that Trust has
+// available for a package
+func (t *Trusty) Report(_ context.Context, dep *types.Dependency) (*types.Reply, error) {
+	u, err := t.PackageEndpoint(dep)
+	if err != nil {
+		return nil, fmt.Errorf("computing package endpoint: %w", err)
+	}
+
+	resp, err := t.Options.HttpClient.GetRequest(u)
 	if err != nil {
 		return nil, fmt.Errorf("could not send request: %w", err)
 	}
