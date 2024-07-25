@@ -18,28 +18,42 @@ import "time"
 
 // Reply is the response from the package report API
 type Reply struct {
-	PackageName    string           `json:"package_name"`
-	PackageType    string           `json:"package_type"`
-	PackageVersion string           `json:"package_version"`
-	Status         string           `json:"status"`
-	Summary        ScoreSummary     `json:"summary"`
-	Provenance     *Provenance      `json:"provenance"`
-	Activity       *Activity        `json:"activity"`
-	Typosquatting  *Typosquatting   `json:"typosquatting"`
-	Alternatives   AlternativesList `json:"alternatives"`
-	PackageData    PackageData      `json:"package_data"`
+	PackageName             string           `json:"package_name"`
+	PackageType             string           `json:"package_type"`
+	PackageVersion          string           `json:"package_version"`
+	Status                  string           `json:"status"`
+	Summary                 ScoreSummary     `json:"summary"`
+	Provenance              *Provenance      `json:"provenance"`
+	Activity                *Activity        `json:"activity"`
+	Typosquatting           *Typosquatting   `json:"typosquatting"`
+	Alternatives            AlternativesList `json:"alternatives"`
+	PackageData             PackageData      `json:"package_data"`
+	SameOriginPackagesCount int              `json:"same_origin_packages_count"`
 }
 
 // Activity captures a package's activity score
 type Activity struct {
-	Score       float64 `json:"score"`
-	Description string  `json:"description"`
+	Score       float64             `json:"score"`
+	Description ActivityDescription `json:"description"`
+}
+
+// ActivityDescription captures the fields of the activuty score
+type ActivityDescription struct {
+	Repository float64 `json:"repo"`
+	User       float64 `json:"user"`
+	// UpdatedAt  *time.Time `json:"updated_at"`
 }
 
 // Typosquatting score for the package's name
 type Typosquatting struct {
-	Score       float64 `json:"score"`
-	Description string  `json:"description"`
+	Score       float64                  `json:"score"`
+	Description TyposquattingDescription `json:"description"`
+	// UpdatedAt   *time.Time               `json:"updated_at"`
+}
+
+// TyposquattingDescription captures the dat details of the typosquatting score
+type TyposquattingDescription struct {
+	TotalSimilarNames int `json:"total_similar_names"`
 }
 
 // Alternative is an alternative package returned from the package intelligence API
@@ -81,13 +95,13 @@ type MaliciousData struct {
 type Provenance struct {
 	Score       float64               `json:"score"`
 	Description ProvenanceDescription `json:"description"`
-	// UpdatedAt   time.Time             `json:"updated_at"`
+	// UpdatedAt   *time.Time            `json:"updated_at"`
 }
 
 // ProvenanceDescription contians the provenance types
 type ProvenanceDescription struct {
 	Historical HistoricalProvenance `json:"hp"`
-	Sigstore   SigstoreProvenance   `json:"provenance"`
+	Sigstore   SigstoreProvenance   `json:"sigstore"`
 }
 
 // HistoricalProvenance has the historical provenance components from a package
