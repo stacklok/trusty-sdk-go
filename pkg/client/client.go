@@ -68,8 +68,20 @@ func New() *Trusty {
 	return NewWithOptions(opts)
 }
 
-// NewWithOptions returns a new client with the dspecified options set
+// NewWithOptions returns a new client with the specified options set
 func NewWithOptions(opts Options) *Trusty {
+	if opts.BaseURL == "" {
+		opts.BaseURL = DefaultOptions.BaseURL
+	}
+
+	if opts.Workers == 0 {
+		opts.Workers = DefaultOptions.Workers
+	}
+
+	if opts.HttpClient == nil {
+		opts.HttpClient = khttp.NewAgent().WithMaxParallel(opts.Workers).WithFailOnHTTPError(true)
+	}
+
 	return &Trusty{
 		Options: opts,
 	}

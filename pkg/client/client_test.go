@@ -62,6 +62,58 @@ func buildReader(s string) io.ReadCloser {
 	return io.NopCloser(stringReader)
 }
 
+func TestNewWithOptions(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		name               string
+		constructorOptions Options
+		usedOptions        Options
+	}{
+		{
+			name: "defaults workers",
+			constructorOptions: Options{
+				BaseURL: "https://test.com",
+			},
+			usedOptions: Options{
+				BaseURL: "https://test.com",
+				Workers: DefaultOptions.Workers,
+			},
+		},
+		{
+			name: "defaults base URL",
+			constructorOptions: Options{
+				Workers: 1,
+			},
+			usedOptions: Options{
+				BaseURL: DefaultOptions.BaseURL,
+				Workers: 1,
+			},
+		},
+		{
+			name: "defaults http client",
+			constructorOptions: Options{
+				Workers: 1,
+				BaseURL: "https://test.com",
+			},
+			usedOptions: Options{
+				Workers: 1,
+				BaseURL: "https://test.com",
+			},
+		},
+	} {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			client := NewWithOptions(tc.constructorOptions)
+
+			require.Equal(t, tc.usedOptions.BaseURL, client.Options.BaseURL)
+			require.Equal(t, tc.usedOptions.Workers, client.Options.Workers)
+			require.NotNil(t, client.Options.HttpClient)
+		})
+	}
+}
+
 func TestReport(t *testing.T) {
 	t.Parallel()
 	respBody := `{"package_name":"requestts","package_type":"pypi"}`
