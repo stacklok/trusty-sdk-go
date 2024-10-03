@@ -24,6 +24,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	packageurl "github.com/package-url/packageurl-go"
 	khttp "sigs.k8s.io/release-utils/http"
@@ -40,17 +41,38 @@ const (
 // Options configures the Trusty API client
 type Options struct {
 	HttpClient netClient
+
 	// Workers is the number of parallel request the client makes to the API
 	Workers int
 
 	// BaseURL of the Trusty API
 	BaseURL string
+
+	// WaitForIngestion causes the http client to wait and retry if Trusty
+	// responds with a successful request but with a "pending" or "scoring" status
+	WaitForIngestion bool
+
+	// ErrOnFailedIngestion makes the client return an error on a Report call
+	// when the ingestion failed internally withing trusty. If false, the
+	// report data willbe returned but the application needs to check the
+	// ingestion status and handle it.
+	ErrOnFailedIngestion bool
+
+	// IngestionRetryWait is the number of seconds that the client will wait for
+	// package ingestion before retrying.
+	IngestionRetryWait int
+
+	// IngestionMaxRetries is the maximum number of requests the client will
+	// send while waiting for ingestion to finish
+	IngestionMaxRetries int
 }
 
 // DefaultOptions is the default Trusty client options set
 var DefaultOptions = Options{
-	Workers: 2,
-	BaseURL: defaultEndpoint,
+	Workers:            2,
+	BaseURL:            defaultEndpoint,
+	WaitForIngestion:   true,
+	IngestionRetryWait: 5,
 }
 
 type netClient interface {
@@ -226,29 +248,73 @@ func (t *Trusty) PurlToDependency(purlString string) (*types.Dependency, error) 
 	}, nil
 }
 
-// Report returns a dependency report with all the data that Trust has
-// available for a package
+// Report returns a dependency report with all the data that Trusty has
+// available for a package.
 func (t *Trusty) Report(_ context.Context, dep *types.Dependency) (*types.Reply, error) {
 	u, err := t.PackageEndpoint(dep)
 	if err != nil {
 		return nil, fmt.Errorf("computing package endpoint: %w", err)
 	}
 
-	resp, err := t.Options.HttpClient.GetRequest(u)
-	if err != nil {
-		return nil, fmt.Errorf("could not send request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("received non-200 response: %d", resp.StatusCode)
-	}
-
 	var r types.Reply
-	dec := json.NewDecoder(resp.Body)
-	if err := dec.Decode(&r); err != nil {
-		return nil, fmt.Errorf("could not unmarshal response: %w", err)
+	tries := 0
+	for {
+		resp, err := t.Options.HttpClient.GetRequest(u)
+		if err != nil {
+			return nil, fmt.Errorf("could not send request: %w", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("received non-200 response: %d", resp.StatusCode)
+		}
+
+		dec := json.NewDecoder(resp.Body)
+		if err := dec.Decode(&r); err != nil {
+			return nil, fmt.Errorf("could not unmarshal response: %w", err)
+		}
+		fmt.Printf("Attempt #%d to fetch package, status: %s", tries, r.PackageData.Status)
+
+		shouldRetry, err := evalRetry(r.PackageData.Status, t.Options)
+		if err != nil {
+			return nil, err
+		}
+
+		if !shouldRetry {
+			break
+		}
+
+		tries++
+		if tries > t.Options.IngestionMaxRetries {
+			return nil, fmt.Errorf("time out reached waiting for package ingestion")
+		}
+		time.Sleep(time.Duration(t.Options.IngestionRetryWait) * time.Second)
 	}
 
-	return &r, nil
+	return &r, err
+}
+
+func evalRetry(status string, opts Options) (shouldRetry bool, err error) {
+	// First, error if the ingestion status is invalid
+	if status != types.IngestStatusFailed && status != types.IngestStatusComplete &&
+		status != types.IngestStatusPending && status != types.IngestStatusScoring {
+
+		return false, fmt.Errorf("unexpected ingestion status when querying package")
+	}
+
+	if status == types.IngestStatusFailed && opts.ErrOnFailedIngestion {
+		return false, fmt.Errorf("upstream error ingesting package data")
+	}
+
+	// Package ingestion is ready
+	if status == types.IngestStatusComplete {
+		return false, nil
+	}
+
+	// Client configured to return raw response (even when package is not ready)
+	if !opts.WaitForIngestion || status == types.IngestStatusFailed {
+		return false, nil
+	}
+
+	return true, nil
 }

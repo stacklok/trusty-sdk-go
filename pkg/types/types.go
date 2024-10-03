@@ -35,6 +35,18 @@ const (
 
 	// ECOSYSTEM_PYPI identifies the Python Package Index
 	ECOSYSTEM_PYPI Ecosystem = 3
+
+	// IngestStatusFailed ingestion failed permanently
+	IngestStatusFailed = "failed"
+
+	// IngestStatusComplete means ingestion is done, data available
+	IngestStatusComplete = "complete"
+
+	// IngestStatusPending means that the ingestion process is waiting to start
+	IngestStatusPending = "pending"
+
+	// IngestStatusScoring means the scoring process is underway
+	IngestStatusScoring = "scoring"
 )
 
 // Ecosystems enumerates the supported ecosystems
