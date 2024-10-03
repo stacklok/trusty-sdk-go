@@ -80,6 +80,8 @@ type PackageData struct {
 	Archived   bool           `json:"archived"`
 	Deprecated bool           `json:"is_deprecated"`
 	Malicious  *MaliciousData `json:"malicious"`
+	Status     string         `json:"status"`
+	StatusCode string         `json:"status_code"`
 }
 
 // MaliciousData contains the security details when a dependency is malicious

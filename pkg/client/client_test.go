@@ -19,7 +19,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -45,6 +44,9 @@ type fakeClient struct {
 func (fc *fakeClient) GetRequest(_ string) (response *http.Response, err error) {
 	if len(fc.resps) != 0 {
 		response = fc.resps[0]
+		if _, err := response.Body.(fakeCloser).Seek(0, 0); err != nil {
+			return nil, fmt.Errorf("seeking fake response: %w", err)
+		}
 	}
 
 	if len(fc.errs) != 0 {
@@ -57,9 +59,20 @@ func (fc *fakeClient) GetRequestGroup(_ []string) (response []*http.Response, er
 	return fc.resps, fc.errs
 }
 
-func buildReader(s string) io.ReadCloser {
+type fakeCloser struct {
+	*strings.Reader
+}
+
+func (_ fakeCloser) Close() error {
+	return nil
+}
+
+func buildReader(s string) fakeCloser {
 	stringReader := strings.NewReader(s)
-	return io.NopCloser(stringReader)
+	f := fakeCloser{
+		Reader: stringReader,
+	}
+	return f
 }
 
 func TestNewWithOptions(t *testing.T) {
@@ -116,11 +129,15 @@ func TestNewWithOptions(t *testing.T) {
 
 func TestReport(t *testing.T) {
 	t.Parallel()
-	respBody := `{"package_name":"requestts","package_type":"pypi"}`
+	respBody := `{"package_name":"requestts","package_type":"pypi", "package_data": { "status":"complete"} }`
 
 	testdep := &types.Dependency{
 		Name:      "requestts",
 		Ecosystem: 1,
+	}
+
+	defaultOpts := Options{
+		BaseURL: defaultEndpoint,
 	}
 
 	for _, tc := range []struct {
@@ -129,6 +146,7 @@ func TestReport(t *testing.T) {
 		prepare  func(*fakeClient)
 		expected *types.Reply
 		mustErr  bool
+		options  *Options
 	}{
 		{
 			name: "normal",
@@ -192,18 +210,65 @@ func TestReport(t *testing.T) {
 			},
 			mustErr: true,
 		},
+		{
+			name: "bad-ingestion-status",
+			dep:  testdep,
+			prepare: func(fc *fakeClient) {
+				fc.resps = append(fc.resps, &http.Response{
+					Body:       buildReader(`{"package_name":"requestts","package_type":"pypi", "package_data": { "status":"bad status"} }`),
+					StatusCode: http.StatusOK,
+				})
+			},
+			options: &Options{
+				BaseURL:              defaultEndpoint,
+				ErrOnFailedIngestion: true,
+			},
+			mustErr: true,
+		},
+		{
+			name: "normal-err-non-ingested",
+			dep:  testdep,
+			prepare: func(fc *fakeClient) {
+				fc.resps = append(fc.resps, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       buildReader(`{"package_name":"requestts","package_type":"pypi", "package_data": { "status":"failed"} }`),
+				})
+			},
+			options: &Options{
+				BaseURL:              defaultEndpoint,
+				ErrOnFailedIngestion: true,
+			},
+			mustErr: true,
+		},
+		{
+			name: "fail-retrying-timeout",
+			dep:  testdep,
+			prepare: func(fc *fakeClient) {
+				fc.resps = append(fc.resps, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       buildReader(`{"package_name":"requestts","package_type":"pypi", "package_data": { "status":"pending"} }`),
+				})
+			},
+			options: &Options{
+				BaseURL:             defaultEndpoint,
+				IngestionMaxRetries: 2,
+				WaitForIngestion:    true,
+			},
+			mustErr: true,
+		},
 	} {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			fake := newFakeClient()
 			tc.prepare(fake)
-			client := &Trusty{
-				Options: Options{
-					HttpClient: fake,
-					BaseURL:    defaultEndpoint,
-				},
+			if tc.options == nil {
+				tc.options = &defaultOpts
 			}
+			client := &Trusty{
+				Options: *tc.options,
+			}
+			client.Options.HttpClient = fake
 
 			res, err := client.Report(context.Background(), tc.dep)
 			if tc.mustErr {
