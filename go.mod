@@ -7,6 +7,7 @@ toolchain go1.23.1
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/google/go-github/v61 v61.0.0
+	github.com/google/uuid v1.6.0
 	github.com/package-url/packageurl-go v0.1.3
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/oauth2 v0.23.0
