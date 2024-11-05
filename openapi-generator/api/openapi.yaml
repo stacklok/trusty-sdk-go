@@ -1,0 +1,2992 @@
+openapi: 3.1.0
+info:
+  description: Trusty API
+  title: Trusty API
+  version: v2
+servers:
+- url: /
+paths:
+  /v2/dependencies/{id}:
+    get:
+      description: |-
+        Fetch the dependencies for a package given its id.
+        This includes the package's name, version, description, and other metadata about contributors.
+
+        DependencyOptions:
+        filter (Optional[str]): CEL filter code to apply.
+        sort_by (Optional[List[str]]): List of fields to sort by.
+        sort_order (Optional[List[str]]): Corresponding list of sort orders.
+        recurse_limit (int): Maximum depth of recursion. Upper limit - should automatically stop at leaf nodes.
+        page_from (int): Pagination start.
+        page_to (int): Pagination end.
+
+        For details on how to use the filter look at the [CEL docs](https://cel.dev/overview/cel-overview)
+        Some examples:
+        - node.score == 0.0
+        - node.score > 0.0 && node.score < 5
+        - "Apache-2.0" in node.claims
+
+        See the [Trusty documentation](https://docs.stacklok.com/trusty/) for more information.
+      operationId: v2_get_dependencies_id
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          title: Id
+          type: string
+        style: simple
+      - explode: true
+        in: query
+        name: filter
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: sort_by
+        required: false
+        schema:
+          items:
+            nullable: true
+            type: string
+          nullable: true
+          type: array
+        style: form
+      - explode: true
+        in: query
+        name: sort_order
+        required: false
+        schema:
+          items:
+            type: string
+          nullable: true
+          type: array
+        style: form
+      - explode: true
+        in: query
+        name: recurse_limit
+        required: false
+        schema:
+          default: 100
+          title: Recurse Limit
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_from
+        required: false
+        schema:
+          default: 0
+          title: Page From
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_to
+        required: false
+        schema:
+          default: 100
+          title: Page To
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DependencyResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Dependencies Id
+      tags:
+      - package
+  /v2/dependencies:
+    get:
+      description: |-
+        Fetch the dependencies for a package given its name version and type.
+        This includes the package's name, version, description, and other metadata about contributors.
+
+        DependencyOptions:
+        filter (Optional[str]): CEL filter code to apply.
+        sort_by (Optional[List[str]]): List of fields to sort by.
+        sort_order (Optional[List[str]]): Corresponding list of sort orders.
+        recurse_limit (int): Maximum depth of recursion. Upper limit - should automatically stop at leaf nodes.
+        page_from (int): Pagination start.
+        page_to (int): Pagination end.
+
+        For details on how to use the filter look at the [CEL docs](https://cel.dev/overview/cel-overview)
+        Some examples:
+        - node.score == 0.0
+        - node.score > 0.0 && node.score < 5
+        - "Apache-2.0" in node.claims
+        See the [Trusty documentation](https://docs.stacklok.com/trusty/) for more information.
+      operationId: v2_get_dependencies
+      parameters:
+      - explode: true
+        in: query
+        name: package_name
+        required: true
+        schema:
+          title: Package Name
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: package_type
+        required: false
+        schema:
+          $ref: '#/components/schemas/PackageType'
+        style: form
+      - explode: true
+        in: query
+        name: package_version
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: filter
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: sort_by
+        required: false
+        schema:
+          items:
+            type: string
+          nullable: true
+          type: array
+        style: form
+      - explode: true
+        in: query
+        name: sort_order
+        required: false
+        schema:
+          items:
+            type: string
+          nullable: true
+          type: array
+        style: form
+      - explode: true
+        in: query
+        name: recurse_limit
+        required: false
+        schema:
+          default: 100
+          title: Recurse Limit
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_from
+        required: false
+        schema:
+          default: 0
+          title: Page From
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: page_to
+        required: false
+        schema:
+          default: 100
+          title: Page To
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DependencyResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Dependencies
+      tags:
+      - package
+  /v2/package/{id}:
+    get:
+      description: |-
+        Fetch the info for a package given its id.
+        This includes the package's name, version, description, and other metadata about contributors.
+      operationId: v2_get_package
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          title: Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrustyPackageResult'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Package
+      tags:
+      - package
+  /v2/package:
+    post:
+      description: |-
+        Fetch the info for a package given its id.
+        This includes the package's name, version, description, and other metadata about contributors.
+        See the [Trusty documentation](https://docs.stacklok.com/trusty/) for more information.
+      operationId: v2_post_package
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                format: uuid
+                type: string
+              type: array
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TrustyPackageResult'
+                type: array
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Post Package
+      tags:
+      - package
+  /v2/pkg:
+    get:
+      description: |-
+        Fetch the metadata for a package.
+
+        This includes the package's name, version, description, and other metadata about contributors.
+
+        See the [Trusty documentation](https://docs.stacklok.com/trusty/) for more information.
+      operationId: v2_get_pkg
+      parameters:
+      - explode: true
+        in: query
+        name: package_name
+        required: true
+        schema:
+          title: Package Name
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: package_type
+        required: false
+        schema:
+          $ref: '#/components/schemas/PackageType'
+        style: form
+      - explode: true
+        in: query
+        name: package_version
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrustyPackageData'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Pkg
+      tags:
+      - package
+  /v2/summary:
+    get:
+      description: Fetch the metadata for a package and compute the adjusted summary
+        score.
+      operationId: v2_get_summary
+      parameters:
+      - explode: true
+        in: query
+        name: package_name
+        required: true
+        schema:
+          title: Package Name
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: package_type
+        required: false
+        schema:
+          $ref: '#/components/schemas/PackageType'
+        style: form
+      - explode: true
+        in: query
+        name: package_version
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageSummaryAnnotation'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Summary
+      tags:
+      - package
+  /v2/similar:
+    get:
+      description: |-
+        Similar packages are those that have similar names to others.
+
+        This may or may not be a sign of typosquatting, depending on the provenance of the packages.
+
+        See [similar packages](similar_packages.md) for more information.
+      operationId: v2_get_similar
+      parameters:
+      - explode: true
+        in: query
+        name: package_name
+        required: true
+        schema:
+          title: Package Name
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: package_type
+        required: false
+        schema:
+          $ref: '#/components/schemas/PackageType'
+        style: form
+      - explode: true
+        in: query
+        name: package_version
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageSimilarResult'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Similar
+      tags:
+      - package
+  /v2/alternatives:
+    get:
+      description: |-
+        This will return a list of alternative packages to the one requested.
+
+        It is based on AI and will try to provide something with similar functionality.
+
+        See [alternatives](alternatives.md) for more information.
+      operationId: v2_get_alternatives
+      parameters:
+      - explode: true
+        in: query
+        name: package_name
+        required: true
+        schema:
+          title: Package Name
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: package_type
+        required: false
+        schema:
+          $ref: '#/components/schemas/PackageType'
+        style: form
+      - explode: true
+        in: query
+        name: package_version
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageAlternatives'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Alternatives
+      tags:
+      - package
+  /v2/same-origin:
+    get:
+      description: |-
+        This will return a list of packages sharing the same repo as the one requested.
+        This can be perfectly normal, many repos produce multiple artifacts,
+        or it can be a sign of star-jacking, depending on the provenance of the packages.
+
+        See [shared origin](shared_origin.md) for more information.
+      operationId: v2_get_same_origin
+      parameters:
+      - explode: true
+        in: query
+        name: package_name
+        required: true
+        schema:
+          title: Package Name
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: package_type
+        required: false
+        schema:
+          $ref: '#/components/schemas/PackageType'
+        style: form
+      - explode: true
+        in: query
+        name: token
+        required: false
+        schema:
+          default: ""
+          title: Token
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SameOriginPackagesResult'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Same Origin
+      tags:
+      - package
+  /v2/malicious:
+    get:
+      description: |-
+        This will return a flag reporting whether the package is known malicious.
+        This is currently manually curated.
+      operationId: v2_get_malicious
+      parameters:
+      - explode: true
+        in: query
+        name: package_name
+        required: true
+        schema:
+          title: Package Name
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: package_type
+        required: false
+        schema:
+          $ref: '#/components/schemas/PackageType'
+        style: form
+      - explode: true
+        in: query
+        name: package_version
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                title: Response V2 Get Malicious
+                type: boolean
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Malicious
+      tags:
+      - package
+  /v2/provenance:
+    get:
+      description: |-
+        This will return the provenance of the package with respect to the package origins.
+        Can it be linked with a repo?
+
+        [Historical provenance](provenance.md#historical-provenance-hp)
+        This contains the number of `tags` in the repo, the number of `versions`
+        of the package, a count of the `common` tags and the ratio of tags to common
+        as `overlap`.
+        Also includes the historical information for tags, versions and matches for the given period type and count,
+        by default the last 12 months from the current date.
+
+        See [provenance](provenance.md) for more information.
+      operationId: v2_get_package_provenance
+      parameters:
+      - explode: true
+        in: query
+        name: package_name
+        required: true
+        schema:
+          title: Package Name
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: package_type
+        required: false
+        schema:
+          $ref: '#/components/schemas/PackageType'
+        style: form
+      - explode: true
+        in: query
+        name: package_version
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: period_type
+        required: false
+        schema:
+          default: month
+          title: Period Type
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: period_count
+        required: false
+        schema:
+          default: 12
+          title: Period Count
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvenanceResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Package Provenance
+      tags:
+      - package
+  /v2/contributor:
+    get:
+      description: Fetch the report for a contributor.
+      operationId: v2_get_contributor_report
+      parameters:
+      - explode: true
+        in: query
+        name: login
+        required: true
+        schema:
+          title: Login
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContributorResult'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Contributor Report
+      tags:
+      - contributor
+  /v2/repository:
+    get:
+      description: Fetch the report for a repository.
+      operationId: v2_get_repository_report
+      parameters:
+      - explode: true
+        in: query
+        name: name
+        required: true
+        schema:
+          title: Name
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryResult'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Repository Report
+      tags:
+      - repository
+  /v2/versions:
+    get:
+      description: Fetch a list of versions for a package.
+      operationId: get_versions_v2_versions_get
+      parameters:
+      - explode: true
+        in: query
+        name: package_name
+        required: true
+        schema:
+          title: Package Name
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: package_type
+        required: false
+        schema:
+          $ref: '#/components/schemas/PackageType'
+        style: form
+      - explode: true
+        in: query
+        name: version_prefix
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: version_fragment
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: token
+        required: false
+        schema:
+          format: date-time
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrustySummarizedPackageVersionResults'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Versions
+      tags:
+      - versions
+  /v2/vulnerabilities:
+    get:
+      description: |-
+        Fetch a list of vulnerabilities for all versions of a package.
+        If a version is provided, only the vulnerabilities for that specific version are returned.
+      operationId: get_vulnerabilities_v2_vulnerabilities_get
+      parameters:
+      - explode: true
+        in: query
+        name: package_name
+        required: true
+        schema:
+          title: Package Name
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: package_type
+        required: false
+        schema:
+          $ref: '#/components/schemas/PackageType'
+        style: form
+      - explode: true
+        in: query
+        name: package_version
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: token
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: num_vulnerabilities
+        required: false
+        schema:
+          nullable: true
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityListResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Vulnerabilities
+      tags:
+      - vulnerabilities
+  /v2/vulnerability:
+    get:
+      description: Fetch the data for a vulnerability.
+      operationId: get_vulnerability_v2_vulnerability_get
+      parameters:
+      - explode: true
+        in: query
+        name: osv_id
+        required: true
+        schema:
+          title: Osv Id
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VulnerabilityResponse'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Vulnerability
+      tags:
+      - vulnerabilities
+  /v2/license:
+    get:
+      description: |-
+        Fetch the license claim for a specified package or repository.
+        The package_name, package_type and version are specified as parameters.
+      operationId: v2_get_licence
+      parameters:
+      - explode: true
+        in: query
+        name: package_name
+        required: true
+        schema:
+          title: Package Name
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: package_type
+        required: false
+        schema:
+          $ref: '#/components/schemas/PackageType'
+        style: form
+      - explode: true
+        in: query
+        name: package_version
+        required: false
+        schema:
+          nullable: true
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/License'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Licence
+      tags:
+      - license
+  /v2/license/{id}:
+    get:
+      description: |-
+        Fetch the license claim for a specified package or repository.
+        The UUID of the package is supplied on the path to fetch its associated license claims.
+      operationId: v2_get_licence_owner
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          title: Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/License'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Licence Owner
+      tags:
+      - license
+  /v2/license/claim/{id}:
+    get:
+      description: Fetch the license claim by id. The UUID of the claim is specified
+        on the path.
+      operationId: v2_get_licence_claim_id
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          title: Id
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LicenseClaim'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - HTTPBearer: []
+      summary: Get Licence Claim Id
+      tags:
+      - license
+components:
+  schemas:
+    AlternativesStatus:
+      enum:
+      - in_progress
+      - complete
+      title: AlternativesStatus
+      type: string
+    ContributorResult:
+      example:
+        contributor_repos:
+        - contributor_count: 5
+          stargazers_count: 0
+          scores:
+            score: 2.3021358869347655
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          open_issues_count: 5
+          last_update: 2000-01-23T04:56:07.000+00:00
+          name: name
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          watchers_count: 6
+          url: url
+          forks_count: 1
+        - contributor_count: 5
+          stargazers_count: 0
+          scores:
+            score: 2.3021358869347655
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          open_issues_count: 5
+          last_update: 2000-01-23T04:56:07.000+00:00
+          name: name
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          watchers_count: 6
+          url: url
+          forks_count: 1
+        contributor_data:
+          hireable: true
+          scores:
+            score: 1.0246457001441578
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          author: author
+          twitter_username: twitter_username
+          login: login
+          blog: blog
+          public_gists: 4
+          url: url
+          followers: 7
+          avatar_url: avatar_url
+          html_url: html_url
+          following: 1
+          author_email: author_email
+          company: company
+          location: location
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          public_repos: 2
+          gravatar_id: gravatar_id
+          email: email
+      properties:
+        contributor_data:
+          $ref: '#/components/schemas/PackageContributorData'
+        contributor_repos:
+          items:
+            $ref: '#/components/schemas/RepositoryData'
+          nullable: true
+          type: array
+      title: ContributorResult
+    DependenciesSummary:
+      example:
+        total: 0
+        declared_licenses:
+          key: 5
+        max_score: 6.027456183070403
+        depths:
+          key: 2
+        vuln_severity:
+          key: 7
+        mean_score: 5.962133916683182
+        min_score: 1.4658129805029452
+      properties:
+        total:
+          default: 0
+          title: Total
+          type: integer
+        max_score:
+          default: 0.0
+          title: Max Score
+          type: number
+        min_score:
+          default: 0.0
+          title: Min Score
+          type: number
+        mean_score:
+          default: 0.0
+          title: Mean Score
+          type: number
+        declared_licenses:
+          additionalProperties:
+            nullable: true
+            type: integer
+          default: {}
+          title: Declared Licenses
+        depths:
+          additionalProperties:
+            nullable: true
+            type: integer
+          default: {}
+          title: Depths
+        vuln_severity:
+          additionalProperties:
+            nullable: true
+            type: integer
+          default: {}
+          title: Vuln Severity
+      title: DependenciesSummary
+    Dependency:
+      example:
+        version_name: version_name
+        activity_score: 3.616076749251911
+        paths:
+        - - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        - - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        name: name
+        depths:
+        - 9
+        - 9
+        mal_osv_id:
+        - mal_osv_id
+        - mal_osv_id
+        vuln_severity:
+        - vuln_severity
+        - vuln_severity
+        package_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        version_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: type
+        parents:
+        - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        declared_license:
+        - declared_license
+        - declared_license
+      properties:
+        name:
+          title: Name
+          type: string
+        type:
+          title: Type
+          type: string
+        version_name:
+          title: Version Name
+          type: string
+        package_id:
+          format: uuid
+          title: Package Id
+          type: string
+        version_id:
+          format: uuid
+          title: Version Id
+          type: string
+        parents:
+          items:
+            format: uuid
+            type: string
+          type: array
+        depths:
+          items:
+            type: integer
+          type: array
+        paths:
+          default: []
+          items:
+            items:
+              format: uuid
+              type: string
+            type: array
+          type: array
+        activity_score:
+          nullable: true
+          type: number
+        declared_license:
+          items:
+            type: string
+          nullable: true
+          type: array
+        vuln_severity:
+          items:
+            type: string
+          nullable: true
+          type: array
+        mal_osv_id:
+          items:
+            type: string
+          nullable: true
+          type: array
+      required:
+      - depths
+      - name
+      - package_id
+      - parents
+      - type
+      - version_id
+      - version_name
+      title: Dependency
+    DependencyResponse:
+      example:
+        summary:
+          total: 0
+          declared_licenses:
+            key: 5
+          max_score: 6.027456183070403
+          depths:
+            key: 2
+          vuln_severity:
+            key: 7
+          mean_score: 5.962133916683182
+          min_score: 1.4658129805029452
+        '@context':
+          key: '@context'
+        dependencies:
+        - version_name: version_name
+          activity_score: 3.616076749251911
+          paths:
+          - - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          - - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          name: name
+          depths:
+          - 9
+          - 9
+          mal_osv_id:
+          - mal_osv_id
+          - mal_osv_id
+          vuln_severity:
+          - vuln_severity
+          - vuln_severity
+          package_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          version_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: type
+          parents:
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          declared_license:
+          - declared_license
+          - declared_license
+        - version_name: version_name
+          activity_score: 3.616076749251911
+          paths:
+          - - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          - - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          name: name
+          depths:
+          - 9
+          - 9
+          mal_osv_id:
+          - mal_osv_id
+          - mal_osv_id
+          vuln_severity:
+          - vuln_severity
+          - vuln_severity
+          package_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          version_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: type
+          parents:
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          declared_license:
+          - declared_license
+          - declared_license
+      properties:
+        '@context':
+          additionalProperties:
+            type: string
+          nullable: true
+        summary:
+          $ref: '#/components/schemas/DependenciesSummary'
+        dependencies:
+          items:
+            $ref: '#/components/schemas/Dependency'
+          type: array
+      required:
+      - dependencies
+      - summary
+      title: DependencyResponse
+    HTTPValidationError:
+      example:
+        detail:
+        - msg: msg
+          loc:
+          - ValidationError_loc_inner
+          - ValidationError_loc_inner
+          type: type
+        - msg: msg
+          loc:
+          - ValidationError_loc_inner
+          - ValidationError_loc_inner
+          type: type
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+      title: HTTPValidationError
+    HistoricalProvenance:
+      description: |-
+        [Historical provenance](provenance.md#historical-provenance-hp)
+        This contains the number of `tags` in the repo, the number of `versions`
+        of the package, a count of the `common` tags and the ratio of tags to common
+        as `overlap`.
+      example:
+        overlap: 0.8008281904610115
+        common: 6.027456183070403
+        versions: 5.962133916683182
+        over_time:
+          hp_over_time:
+            key:
+              vers: 7
+              matches: 9
+              tags: 2
+          period_type: month
+          period_count: 5
+        tags: 1.4658129805029452
+      properties:
+        overlap:
+          default: 0
+          title: Overlap
+          type: number
+        common:
+          default: 0
+          title: Common
+          type: number
+        tags:
+          default: 0
+          title: Tags
+          type: number
+        versions:
+          default: 0
+          title: Versions
+          type: number
+        over_time:
+          $ref: '#/components/schemas/Over_Time'
+      title: HistoricalProvenance
+    HistoricalProvenanceOT:
+      example:
+        hp_over_time:
+          key:
+            vers: 7
+            matches: 9
+            tags: 2
+        period_type: month
+        period_count: 5
+      properties:
+        period_type:
+          default: month
+          title: Period Type
+          type: string
+        period_count:
+          default: 12
+          title: Period Count
+          type: integer
+        hp_over_time:
+          additionalProperties:
+            $ref: '#/components/schemas/PeriodHistoricalProvenance'
+          default: {}
+          title: Hp Over Time
+      title: HistoricalProvenanceOT
+    License:
+      description: All the licence information about a package.
+      example:
+        license: license
+        claims:
+        - licenses:
+          - licenses
+          - licenses
+          owner_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          claim: claim
+          description: description
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          source: source
+          content: content
+          url: url
+        - licenses:
+          - licenses
+          - licenses
+          owner_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          claim: claim
+          description: description
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          source: source
+          content: content
+          url: url
+      properties:
+        claims:
+          default: []
+          items:
+            $ref: '#/components/schemas/LicenseClaim'
+          type: array
+        license:
+          nullable: true
+          type: string
+      title: License
+    LicenseClaim:
+      description: A claim about a license.
+      example:
+        licenses:
+        - licenses
+        - licenses
+        owner_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        claim: claim
+        description: description
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        source: source
+        content: content
+        url: url
+      properties:
+        id:
+          format: uuid
+          title: Id
+          type: string
+        owner_id:
+          format: uuid
+          title: Owner Id
+          type: string
+        licenses:
+          default: []
+          items:
+            type: string
+          type: array
+        claim:
+          nullable: true
+          type: string
+        content:
+          nullable: true
+          type: string
+        url:
+          nullable: true
+          type: string
+        source:
+          nullable: true
+          type: string
+        description:
+          nullable: true
+          type: string
+      title: LicenseClaim
+    PackageAlternatives:
+      example:
+        packages:
+        - repo_description: repo_description
+          is_malicious: false
+          score: 6.84685269835264
+          package_version: package_version
+          provenance:
+            score: 1.4894159098541704
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          package_name: package_name
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          package_type: null
+        - repo_description: repo_description
+          is_malicious: false
+          score: 6.84685269835264
+          package_version: package_version
+          provenance:
+            score: 1.4894159098541704
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          package_name: package_name
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          package_type: null
+        status: in_progress
+      properties:
+        status:
+          $ref: '#/components/schemas/AlternativesStatus'
+        packages:
+          items:
+            $ref: '#/components/schemas/PackageBasicInfo'
+          nullable: true
+          type: array
+      title: PackageAlternatives
+    PackageAnnotation:
+      description: This represents a package annotation.
+      example:
+        score: 1.4894159098541704
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        description: ""
+      properties:
+        score:
+          nullable: true
+          type: number
+        description: {}
+        updated_at:
+          format: date-time
+          title: Updated At
+          type: string
+      required:
+      - updated_at
+      title: PackageAnnotation
+    PackageBasicInfo:
+      description: This represents the basic information about a package.
+      example:
+        repo_description: repo_description
+        is_malicious: false
+        score: 6.84685269835264
+        package_version: package_version
+        provenance:
+          score: 1.4894159098541704
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          description: ""
+        package_name: package_name
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        package_type: null
+      properties:
+        id:
+          format: uuid
+          title: Id
+          type: string
+        package_name:
+          title: Package Name
+          type: string
+        package_type:
+          $ref: '#/components/schemas/PackageType'
+        package_version:
+          nullable: true
+          type: string
+        repo_description:
+          nullable: true
+          type: string
+        score:
+          nullable: true
+          type: number
+        is_malicious:
+          default: false
+          title: Is Malicious
+          type: boolean
+        provenance:
+          $ref: '#/components/schemas/Provenance'
+      required:
+      - id
+      - package_name
+      - package_type
+      - package_version
+      title: PackageBasicInfo
+    PackageContributorData:
+      example:
+        hireable: true
+        scores:
+          score: 1.0246457001441578
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          description: ""
+        author: author
+        twitter_username: twitter_username
+        login: login
+        blog: blog
+        public_gists: 4
+        url: url
+        followers: 7
+        avatar_url: avatar_url
+        html_url: html_url
+        following: 1
+        author_email: author_email
+        company: company
+        location: location
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        public_repos: 2
+        gravatar_id: gravatar_id
+        email: email
+      properties:
+        id:
+          format: uuid
+          title: Id
+          type: string
+        author:
+          nullable: true
+          type: string
+        author_email:
+          nullable: true
+          type: string
+        login:
+          nullable: true
+          type: string
+        avatar_url:
+          nullable: true
+          type: string
+        gravatar_id:
+          nullable: true
+          type: string
+        url:
+          nullable: true
+          type: string
+        html_url:
+          nullable: true
+          type: string
+        company:
+          nullable: true
+          type: string
+        blog:
+          nullable: true
+          type: string
+        location:
+          nullable: true
+          type: string
+        email:
+          nullable: true
+          type: string
+        hireable:
+          nullable: true
+          type: boolean
+        twitter_username:
+          nullable: true
+          type: string
+        public_repos:
+          nullable: true
+          type: integer
+        public_gists:
+          nullable: true
+          type: integer
+        followers:
+          nullable: true
+          type: integer
+        following:
+          nullable: true
+          type: integer
+        scores:
+          $ref: '#/components/schemas/Scores'
+      required:
+      - id
+      title: PackageContributorData
+    PackageMaliciousPayload:
+      description: This represents the payload details for a malicious package.
+      example:
+        summary: summary
+        modified: 2000-01-23T04:56:07.000+00:00
+        details: details
+        published: 2000-01-23T04:56:07.000+00:00
+        source: source
+      properties:
+        summary:
+          title: Summary
+          type: string
+        details:
+          nullable: true
+          type: string
+        published:
+          format: date-time
+          nullable: true
+          type: string
+        modified:
+          format: date-time
+          nullable: true
+          type: string
+        source:
+          nullable: true
+          type: string
+      required:
+      - summary
+      title: PackageMaliciousPayload
+    PackageSimilarResult:
+      example:
+        similar_package_names:
+        - repo_description: repo_description
+          is_malicious: false
+          score: 6.84685269835264
+          package_version: package_version
+          provenance:
+            score: 1.4894159098541704
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          package_name: package_name
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          package_type: null
+        - repo_description: repo_description
+          is_malicious: false
+          score: 6.84685269835264
+          package_version: package_version
+          provenance:
+            score: 1.4894159098541704
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          package_name: package_name
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          package_type: null
+      properties:
+        similar_package_names:
+          items:
+            $ref: '#/components/schemas/PackageBasicInfo'
+          nullable: true
+          type: array
+      required:
+      - similar_package_names
+      title: PackageSimilarResult
+    PackageStatus:
+      enum:
+      - pending
+      - initial
+      - neighbours
+      - complete
+      - failed
+      - scoring
+      - propagate
+      - deleted
+      title: PackageStatus
+      type: string
+    PackageSummaryAnnotation:
+      description: This represents a package annotation.
+      example:
+        score: 0.8008281904610115
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        description: ""
+        status: in_progress
+      properties:
+        score:
+          nullable: true
+          type: number
+        description: {}
+        updated_at:
+          format: date-time
+          title: Updated At
+          type: string
+        status:
+          $ref: '#/components/schemas/SummaryAnnotationStatus'
+      required:
+      - updated_at
+      title: PackageSummaryAnnotation
+    PackageType:
+      enum:
+      - pypi
+      - npm
+      - crates
+      - maven
+      - go
+      title: PackageType
+      type: string
+    PeriodHistoricalProvenance:
+      example:
+        vers: 7
+        matches: 9
+        tags: 2
+      properties:
+        tags:
+          default: 0
+          title: Tags
+          type: integer
+        vers:
+          default: 0
+          title: Vers
+          type: integer
+        matches:
+          default: 0
+          title: Matches
+          type: integer
+      title: PeriodHistoricalProvenance
+    PersonAnnotation:
+      description: This represents a package annotation.
+      example:
+        score: 1.0246457001441578
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        description: ""
+      properties:
+        score:
+          nullable: true
+          type: number
+        description: {}
+        updated_at:
+          format: date-time
+          title: Updated At
+          type: string
+      required:
+      - updated_at
+      title: PersonAnnotation
+    ProvenanceData:
+      example:
+        workflow: ""
+        source_repo: ""
+        transparency: ""
+        token_issuer: ""
+        issuer: ""
+      properties:
+        source_repo:
+          default: ""
+          title: Source Repo
+          type: string
+        workflow:
+          default: ""
+          title: Workflow
+          type: string
+        issuer:
+          default: ""
+          title: Issuer
+          type: string
+        token_issuer:
+          default: ""
+          title: Token Issuer
+          type: string
+        transparency:
+          default: ""
+          title: Transparency
+          type: string
+      title: ProvenanceData
+    ProvenanceResponse:
+      example:
+        score: 3.616076749251911
+        sigstore:
+          workflow: ""
+          source_repo: ""
+          transparency: ""
+          token_issuer: ""
+          issuer: ""
+        hp:
+          overlap: 0.8008281904610115
+          common: 6.027456183070403
+          versions: 5.962133916683182
+          over_time:
+            hp_over_time:
+              key:
+                vers: 7
+                matches: 9
+                tags: 2
+            period_type: month
+            period_count: 5
+          tags: 1.4658129805029452
+        status: missing
+      properties:
+        status:
+          default: missing
+          title: Status
+          type: string
+        hp:
+          $ref: '#/components/schemas/HistoricalProvenance'
+        sigstore:
+          $ref: '#/components/schemas/Sigstore'
+        score:
+          default: 0
+          title: Score
+          type: number
+      title: ProvenanceResponse
+    RepositoryAnnotation:
+      description: This represents a package annotation.
+      example:
+        score: 2.3021358869347655
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        description: ""
+      properties:
+        score:
+          nullable: true
+          type: number
+        description: {}
+        updated_at:
+          format: date-time
+          title: Updated At
+          type: string
+      required:
+      - updated_at
+      title: RepositoryAnnotation
+    RepositoryData:
+      example:
+        contributor_count: 5
+        stargazers_count: 0
+        scores:
+          score: 2.3021358869347655
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          description: ""
+        open_issues_count: 5
+        last_update: 2000-01-23T04:56:07.000+00:00
+        name: name
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        watchers_count: 6
+        url: url
+        forks_count: 1
+      properties:
+        id:
+          format: uuid
+          title: Id
+          type: string
+        name:
+          nullable: true
+          type: string
+        url:
+          nullable: true
+          type: string
+        stargazers_count:
+          nullable: true
+          type: integer
+        watchers_count:
+          nullable: true
+          type: integer
+        forks_count:
+          nullable: true
+          type: integer
+        open_issues_count:
+          nullable: true
+          type: integer
+        contributor_count:
+          nullable: true
+          type: integer
+        scores:
+          $ref: '#/components/schemas/Scores_1'
+        last_update:
+          format: date-time
+          nullable: true
+          type: string
+      required:
+      - id
+      title: RepositoryData
+    RepositoryResult:
+      example:
+        contributors:
+        - hireable: true
+          scores:
+            score: 1.0246457001441578
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          author: author
+          twitter_username: twitter_username
+          login: login
+          blog: blog
+          public_gists: 4
+          url: url
+          followers: 7
+          avatar_url: avatar_url
+          html_url: html_url
+          following: 1
+          author_email: author_email
+          company: company
+          location: location
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          public_repos: 2
+          gravatar_id: gravatar_id
+          email: email
+        - hireable: true
+          scores:
+            score: 1.0246457001441578
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          author: author
+          twitter_username: twitter_username
+          login: login
+          blog: blog
+          public_gists: 4
+          url: url
+          followers: 7
+          avatar_url: avatar_url
+          html_url: html_url
+          following: 1
+          author_email: author_email
+          company: company
+          location: location
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          public_repos: 2
+          gravatar_id: gravatar_id
+          email: email
+        repository:
+          contributor_count: 5
+          stargazers_count: 0
+          scores:
+            score: 2.3021358869347655
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          open_issues_count: 5
+          last_update: 2000-01-23T04:56:07.000+00:00
+          name: name
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          watchers_count: 6
+          url: url
+          forks_count: 1
+        packages:
+        - status_code: status_code
+          has_downloads: true
+          stargazers_count: 0
+          scores:
+            score: 1.4894159098541704
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          open_issues_count: 5
+          origin: origin
+          type: null
+          repo_description: repo_description
+          home_page: home_page
+          has_projects: true
+          archived: true
+          malicious:
+            summary: summary
+            modified: 2000-01-23T04:56:07.000+00:00
+            details: details
+            published: 2000-01-23T04:56:07.000+00:00
+            source: source
+          contributor_count: 5
+          last_update: 2000-01-23T04:56:07.000+00:00
+          author_email: author_email
+          disabled: true
+          repository_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          public_repos: 2
+          repository_name: repository_name
+          owner:
+            hireable: true
+            scores:
+              score: 1.0246457001441578
+              updated_at: 2000-01-23T04:56:07.000+00:00
+              description: ""
+            author: author
+            twitter_username: twitter_username
+            login: login
+            blog: blog
+            public_gists: 4
+            url: url
+            followers: 7
+            avatar_url: avatar_url
+            html_url: html_url
+            following: 1
+            author_email: author_email
+            company: company
+            location: location
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            public_repos: 2
+            gravatar_id: gravatar_id
+            email: email
+          visibility: visibility
+          author: author
+          version_date: 2000-01-23T04:56:07.000+00:00
+          version: version
+          has_issues: true
+          public_gists: 7
+          package_description: package_description
+          followers: 9
+          is_deprecated: true
+          following: 3
+          has_triggered_reingestion: true
+          name: name
+          default_branch: default_branch
+          contributors:
+          - hireable: true
+            scores:
+              score: 1.0246457001441578
+              updated_at: 2000-01-23T04:56:07.000+00:00
+              description: ""
+            author: author
+            twitter_username: twitter_username
+            login: login
+            blog: blog
+            public_gists: 4
+            url: url
+            followers: 7
+            avatar_url: avatar_url
+            html_url: html_url
+            following: 1
+            author_email: author_email
+            company: company
+            location: location
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            public_repos: 2
+            gravatar_id: gravatar_id
+            email: email
+          - hireable: true
+            scores:
+              score: 1.0246457001441578
+              updated_at: 2000-01-23T04:56:07.000+00:00
+              description: ""
+            author: author
+            twitter_username: twitter_username
+            login: login
+            blog: blog
+            public_gists: 4
+            url: url
+            followers: 7
+            avatar_url: avatar_url
+            html_url: html_url
+            following: 1
+            author_email: author_email
+            company: company
+            location: location
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            public_repos: 2
+            gravatar_id: gravatar_id
+            email: email
+          watchers_count: 6
+          status: pending
+          forks_count: 1
+        - status_code: status_code
+          has_downloads: true
+          stargazers_count: 0
+          scores:
+            score: 1.4894159098541704
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          open_issues_count: 5
+          origin: origin
+          type: null
+          repo_description: repo_description
+          home_page: home_page
+          has_projects: true
+          archived: true
+          malicious:
+            summary: summary
+            modified: 2000-01-23T04:56:07.000+00:00
+            details: details
+            published: 2000-01-23T04:56:07.000+00:00
+            source: source
+          contributor_count: 5
+          last_update: 2000-01-23T04:56:07.000+00:00
+          author_email: author_email
+          disabled: true
+          repository_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          public_repos: 2
+          repository_name: repository_name
+          owner:
+            hireable: true
+            scores:
+              score: 1.0246457001441578
+              updated_at: 2000-01-23T04:56:07.000+00:00
+              description: ""
+            author: author
+            twitter_username: twitter_username
+            login: login
+            blog: blog
+            public_gists: 4
+            url: url
+            followers: 7
+            avatar_url: avatar_url
+            html_url: html_url
+            following: 1
+            author_email: author_email
+            company: company
+            location: location
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            public_repos: 2
+            gravatar_id: gravatar_id
+            email: email
+          visibility: visibility
+          author: author
+          version_date: 2000-01-23T04:56:07.000+00:00
+          version: version
+          has_issues: true
+          public_gists: 7
+          package_description: package_description
+          followers: 9
+          is_deprecated: true
+          following: 3
+          has_triggered_reingestion: true
+          name: name
+          default_branch: default_branch
+          contributors:
+          - hireable: true
+            scores:
+              score: 1.0246457001441578
+              updated_at: 2000-01-23T04:56:07.000+00:00
+              description: ""
+            author: author
+            twitter_username: twitter_username
+            login: login
+            blog: blog
+            public_gists: 4
+            url: url
+            followers: 7
+            avatar_url: avatar_url
+            html_url: html_url
+            following: 1
+            author_email: author_email
+            company: company
+            location: location
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            public_repos: 2
+            gravatar_id: gravatar_id
+            email: email
+          - hireable: true
+            scores:
+              score: 1.0246457001441578
+              updated_at: 2000-01-23T04:56:07.000+00:00
+              description: ""
+            author: author
+            twitter_username: twitter_username
+            login: login
+            blog: blog
+            public_gists: 4
+            url: url
+            followers: 7
+            avatar_url: avatar_url
+            html_url: html_url
+            following: 1
+            author_email: author_email
+            company: company
+            location: location
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            public_repos: 2
+            gravatar_id: gravatar_id
+            email: email
+          watchers_count: 6
+          status: pending
+          forks_count: 1
+      properties:
+        repository:
+          $ref: '#/components/schemas/RepositoryData'
+        contributors:
+          items:
+            $ref: '#/components/schemas/PackageContributorData'
+          nullable: true
+          type: array
+        packages:
+          items:
+            $ref: '#/components/schemas/TrustyPackageData'
+          nullable: true
+          type: array
+      title: RepositoryResult
+    SameOriginPackagesResult:
+      example:
+        same_origin_packages:
+        - repo_description: repo_description
+          is_malicious: false
+          score: 6.84685269835264
+          package_version: package_version
+          provenance:
+            score: 1.4894159098541704
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          package_name: package_name
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          package_type: null
+        - repo_description: repo_description
+          is_malicious: false
+          score: 6.84685269835264
+          package_version: package_version
+          provenance:
+            score: 1.4894159098541704
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          package_name: package_name
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          package_type: null
+        next_token: next_token
+      properties:
+        next_token:
+          title: Next Token
+          type: string
+        same_origin_packages:
+          items:
+            $ref: '#/components/schemas/PackageBasicInfo'
+          nullable: true
+          type: array
+      required:
+      - next_token
+      title: SameOriginPackagesResult
+    SummaryAnnotationStatus:
+      enum:
+      - in_progress
+      - complete
+      title: SummaryAnnotationStatus
+      type: string
+    TrustyPackageData:
+      example:
+        status_code: status_code
+        has_downloads: true
+        stargazers_count: 0
+        scores:
+          score: 1.4894159098541704
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          description: ""
+        open_issues_count: 5
+        origin: origin
+        type: null
+        repo_description: repo_description
+        home_page: home_page
+        has_projects: true
+        archived: true
+        malicious:
+          summary: summary
+          modified: 2000-01-23T04:56:07.000+00:00
+          details: details
+          published: 2000-01-23T04:56:07.000+00:00
+          source: source
+        contributor_count: 5
+        last_update: 2000-01-23T04:56:07.000+00:00
+        author_email: author_email
+        disabled: true
+        repository_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        public_repos: 2
+        repository_name: repository_name
+        owner:
+          hireable: true
+          scores:
+            score: 1.0246457001441578
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          author: author
+          twitter_username: twitter_username
+          login: login
+          blog: blog
+          public_gists: 4
+          url: url
+          followers: 7
+          avatar_url: avatar_url
+          html_url: html_url
+          following: 1
+          author_email: author_email
+          company: company
+          location: location
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          public_repos: 2
+          gravatar_id: gravatar_id
+          email: email
+        visibility: visibility
+        author: author
+        version_date: 2000-01-23T04:56:07.000+00:00
+        version: version
+        has_issues: true
+        public_gists: 7
+        package_description: package_description
+        followers: 9
+        is_deprecated: true
+        following: 3
+        has_triggered_reingestion: true
+        name: name
+        default_branch: default_branch
+        contributors:
+        - hireable: true
+          scores:
+            score: 1.0246457001441578
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          author: author
+          twitter_username: twitter_username
+          login: login
+          blog: blog
+          public_gists: 4
+          url: url
+          followers: 7
+          avatar_url: avatar_url
+          html_url: html_url
+          following: 1
+          author_email: author_email
+          company: company
+          location: location
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          public_repos: 2
+          gravatar_id: gravatar_id
+          email: email
+        - hireable: true
+          scores:
+            score: 1.0246457001441578
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          author: author
+          twitter_username: twitter_username
+          login: login
+          blog: blog
+          public_gists: 4
+          url: url
+          followers: 7
+          avatar_url: avatar_url
+          html_url: html_url
+          following: 1
+          author_email: author_email
+          company: company
+          location: location
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          public_repos: 2
+          gravatar_id: gravatar_id
+          email: email
+        watchers_count: 6
+        status: pending
+        forks_count: 1
+      properties:
+        id:
+          format: uuid
+          title: Id
+          type: string
+        status:
+          $ref: '#/components/schemas/PackageStatus'
+        status_code:
+          nullable: true
+          type: string
+        name:
+          title: Name
+          type: string
+        type:
+          $ref: '#/components/schemas/PackageType'
+        version:
+          nullable: true
+          type: string
+        version_date:
+          format: date-time
+          nullable: true
+          type: string
+        author:
+          nullable: true
+          type: string
+        author_email:
+          nullable: true
+          type: string
+        package_description:
+          nullable: true
+          type: string
+        repo_description:
+          nullable: true
+          type: string
+        origin:
+          nullable: true
+          type: string
+        stargazers_count:
+          nullable: true
+          type: integer
+        watchers_count:
+          nullable: true
+          type: integer
+        home_page:
+          nullable: true
+          type: string
+        has_issues:
+          nullable: true
+          type: boolean
+        has_projects:
+          nullable: true
+          type: boolean
+        has_downloads:
+          nullable: true
+          type: boolean
+        forks_count:
+          nullable: true
+          type: integer
+        archived:
+          nullable: true
+          type: boolean
+        is_deprecated:
+          nullable: true
+          type: boolean
+        disabled:
+          nullable: true
+          type: boolean
+        open_issues_count:
+          nullable: true
+          type: integer
+        visibility:
+          nullable: true
+          type: string
+        default_branch:
+          nullable: true
+          type: string
+        repository_id:
+          format: uuid
+          nullable: true
+          type: string
+        repository_name:
+          nullable: true
+          type: string
+        contributor_count:
+          nullable: true
+          type: integer
+        public_repos:
+          nullable: true
+          type: integer
+        public_gists:
+          nullable: true
+          type: integer
+        followers:
+          nullable: true
+          type: integer
+        following:
+          nullable: true
+          type: integer
+        owner:
+          $ref: '#/components/schemas/PackageContributorData'
+        contributors:
+          items:
+            $ref: '#/components/schemas/PackageContributorData'
+          nullable: true
+          type: array
+        last_update:
+          format: date-time
+          nullable: true
+          type: string
+        scores:
+          $ref: '#/components/schemas/Scores_2'
+        malicious:
+          $ref: '#/components/schemas/PackageMaliciousPayload'
+        has_triggered_reingestion:
+          nullable: true
+          type: boolean
+      required:
+      - id
+      - name
+      - status
+      - type
+      title: TrustyPackageData
+    TrustyPackageResult:
+      description: |-
+        This result repesents all the intelligence about a package.
+
+        It includes component scores, typosquatting, activity, and provenance
+        and also a summary.
+
+        See [scoring](https://github.com/stacklok/trusty/blob/main/docs/scoring.md) for more information.
+      example:
+        summary:
+          score: 1.4894159098541704
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          description: ""
+        typosquatting:
+          score: 1.4894159098541704
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          description: ""
+        activity:
+          score: 1.4894159098541704
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          description: ""
+        package_type: pypi
+        package_version: package_version
+        provenance:
+          score: 1.4894159098541704
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          description: ""
+        has_triggered_reingestion: true
+        package_name: package_name
+        alternatives:
+          packages:
+          - repo_description: repo_description
+            is_malicious: false
+            score: 6.84685269835264
+            package_version: package_version
+            provenance:
+              score: 1.4894159098541704
+              updated_at: 2000-01-23T04:56:07.000+00:00
+              description: ""
+            package_name: package_name
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            package_type: null
+          - repo_description: repo_description
+            is_malicious: false
+            score: 6.84685269835264
+            package_version: package_version
+            provenance:
+              score: 1.4894159098541704
+              updated_at: 2000-01-23T04:56:07.000+00:00
+              description: ""
+            package_name: package_name
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            package_type: null
+          status: in_progress
+        package_data:
+          status_code: status_code
+          has_downloads: true
+          stargazers_count: 0
+          scores:
+            score: 1.4894159098541704
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          open_issues_count: 5
+          origin: origin
+          type: null
+          repo_description: repo_description
+          home_page: home_page
+          has_projects: true
+          archived: true
+          malicious:
+            summary: summary
+            modified: 2000-01-23T04:56:07.000+00:00
+            details: details
+            published: 2000-01-23T04:56:07.000+00:00
+            source: source
+          contributor_count: 5
+          last_update: 2000-01-23T04:56:07.000+00:00
+          author_email: author_email
+          disabled: true
+          repository_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          public_repos: 2
+          repository_name: repository_name
+          owner:
+            hireable: true
+            scores:
+              score: 1.0246457001441578
+              updated_at: 2000-01-23T04:56:07.000+00:00
+              description: ""
+            author: author
+            twitter_username: twitter_username
+            login: login
+            blog: blog
+            public_gists: 4
+            url: url
+            followers: 7
+            avatar_url: avatar_url
+            html_url: html_url
+            following: 1
+            author_email: author_email
+            company: company
+            location: location
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            public_repos: 2
+            gravatar_id: gravatar_id
+            email: email
+          visibility: visibility
+          author: author
+          version_date: 2000-01-23T04:56:07.000+00:00
+          version: version
+          has_issues: true
+          public_gists: 7
+          package_description: package_description
+          followers: 9
+          is_deprecated: true
+          following: 3
+          has_triggered_reingestion: true
+          name: name
+          default_branch: default_branch
+          contributors:
+          - hireable: true
+            scores:
+              score: 1.0246457001441578
+              updated_at: 2000-01-23T04:56:07.000+00:00
+              description: ""
+            author: author
+            twitter_username: twitter_username
+            login: login
+            blog: blog
+            public_gists: 4
+            url: url
+            followers: 7
+            avatar_url: avatar_url
+            html_url: html_url
+            following: 1
+            author_email: author_email
+            company: company
+            location: location
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            public_repos: 2
+            gravatar_id: gravatar_id
+            email: email
+          - hireable: true
+            scores:
+              score: 1.0246457001441578
+              updated_at: 2000-01-23T04:56:07.000+00:00
+              description: ""
+            author: author
+            twitter_username: twitter_username
+            login: login
+            blog: blog
+            public_gists: 4
+            url: url
+            followers: 7
+            avatar_url: avatar_url
+            html_url: html_url
+            following: 1
+            author_email: author_email
+            company: company
+            location: location
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            public_repos: 2
+            gravatar_id: gravatar_id
+            email: email
+          watchers_count: 6
+          status: pending
+          forks_count: 1
+        same_origin_packages_count: 7
+        similar_package_names:
+        - repo_description: repo_description
+          is_malicious: false
+          score: 6.84685269835264
+          package_version: package_version
+          provenance:
+            score: 1.4894159098541704
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          package_name: package_name
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          package_type: null
+        - repo_description: repo_description
+          is_malicious: false
+          score: 6.84685269835264
+          package_version: package_version
+          provenance:
+            score: 1.4894159098541704
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            description: ""
+          package_name: package_name
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          package_type: null
+        status: null
+      properties:
+        package_name:
+          title: Package Name
+          type: string
+        package_type:
+          $ref: '#/components/schemas/PackageType'
+        package_version:
+          nullable: true
+          type: string
+        package_data:
+          $ref: '#/components/schemas/TrustyPackageData'
+        status:
+          $ref: '#/components/schemas/PackageStatus'
+        summary:
+          $ref: '#/components/schemas/PackageAnnotation'
+        provenance:
+          $ref: '#/components/schemas/PackageAnnotation'
+        activity:
+          $ref: '#/components/schemas/PackageAnnotation'
+        typosquatting:
+          $ref: '#/components/schemas/PackageAnnotation'
+        alternatives:
+          $ref: '#/components/schemas/PackageAlternatives'
+        similar_package_names:
+          items:
+            $ref: '#/components/schemas/PackageBasicInfo'
+          nullable: true
+          type: array
+        same_origin_packages_count:
+          nullable: true
+          type: integer
+        has_triggered_reingestion:
+          nullable: true
+          type: boolean
+      required:
+      - package_data
+      - package_name
+      - package_type
+      title: TrustyPackageResult
+    TrustySummarizedPackageVersion:
+      example:
+        score: 0.8008281904610115
+        is_deprecated: false
+        version_date: 2000-01-23T04:56:07.000+00:00
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        version: version
+      properties:
+        id:
+          format: uuid
+          nullable: true
+          type: string
+        version:
+          title: Version
+          type: string
+        version_date:
+          format: date-time
+          nullable: true
+          type: string
+        is_deprecated:
+          default: false
+          title: Is Deprecated
+          type: boolean
+        score:
+          nullable: true
+          type: number
+      required:
+      - score
+      - version
+      - version_date
+      title: TrustySummarizedPackageVersion
+    TrustySummarizedPackageVersionResults:
+      example:
+        next_token: 2000-01-23T04:56:07.000+00:00
+        results:
+        - score: 0.8008281904610115
+          is_deprecated: false
+          version_date: 2000-01-23T04:56:07.000+00:00
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          version: version
+        - score: 0.8008281904610115
+          is_deprecated: false
+          version_date: 2000-01-23T04:56:07.000+00:00
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          version: version
+        latest:
+          score: 0.8008281904610115
+          is_deprecated: false
+          version_date: 2000-01-23T04:56:07.000+00:00
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          version: version
+      properties:
+        results:
+          items:
+            $ref: '#/components/schemas/TrustySummarizedPackageVersion'
+          type: array
+        next_token:
+          format: date-time
+          nullable: true
+          type: string
+        latest:
+          $ref: '#/components/schemas/TrustySummarizedPackageVersion'
+      required:
+      - results
+      title: TrustySummarizedPackageVersionResults
+    ValidationError:
+      example:
+        msg: msg
+        loc:
+        - ValidationError_loc_inner
+        - ValidationError_loc_inner
+        type: type
+      properties:
+        loc:
+          items:
+            $ref: '#/components/schemas/ValidationError_loc_inner'
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    VulnerabilityListResponse:
+      example:
+        vulnerabilities:
+        - summary: summary
+          severity:
+          - score: 0.8008281904610115
+            severity_type: CVSS_V2
+            severity_level: None
+          - score: 0.8008281904610115
+            severity_type: CVSS_V2
+            severity_level: None
+          osv_identifier: osv_identifier
+        - summary: summary
+          severity:
+          - score: 0.8008281904610115
+            severity_type: CVSS_V2
+            severity_level: None
+          - score: 0.8008281904610115
+            severity_type: CVSS_V2
+            severity_level: None
+          osv_identifier: osv_identifier
+        next_token: next_token
+      properties:
+        vulnerabilities:
+          items:
+            $ref: '#/components/schemas/VulnerabilityScores'
+          type: array
+        next_token:
+          nullable: true
+          type: string
+      required:
+      - vulnerabilities
+      title: VulnerabilityListResponse
+    VulnerabilityResponse:
+      example:
+        data: "{}"
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        osv_id: osv_id
+      properties:
+        id:
+          format: uuid
+          title: Id
+          type: string
+        data:
+          title: Data
+          type: object
+        osv_id:
+          title: Osv Id
+          type: string
+        created_at:
+          format: date-time
+          title: Created At
+          type: string
+        updated_at:
+          format: date-time
+          title: Updated At
+          type: string
+      required:
+      - created_at
+      - data
+      - id
+      - osv_id
+      - updated_at
+      title: VulnerabilityResponse
+    VulnerabilityScores:
+      example:
+        summary: summary
+        severity:
+        - score: 0.8008281904610115
+          severity_type: CVSS_V2
+          severity_level: None
+        - score: 0.8008281904610115
+          severity_type: CVSS_V2
+          severity_level: None
+        osv_identifier: osv_identifier
+      properties:
+        osv_identifier:
+          title: Osv Identifier
+          type: string
+        summary:
+          title: Summary
+          type: string
+        severity:
+          items:
+            $ref: '#/components/schemas/VulnerabilitySeverity'
+          type: array
+      required:
+      - osv_identifier
+      - severity
+      - summary
+      title: VulnerabilityScores
+    VulnerabilitySeverity:
+      example:
+        score: 0.8008281904610115
+        severity_type: CVSS_V2
+        severity_level: None
+      properties:
+        severity_type:
+          $ref: '#/components/schemas/VulnerabilitySeverityType'
+        severity_level:
+          $ref: '#/components/schemas/VulnerabilitySeverityLevel'
+        score:
+          title: Score
+          type: number
+      required:
+      - score
+      - severity_level
+      - severity_type
+      title: VulnerabilitySeverity
+    VulnerabilitySeverityLevel:
+      enum:
+      - None
+      - Low
+      - Medium
+      - High
+      - Critical
+      title: VulnerabilitySeverityLevel
+      type: string
+    VulnerabilitySeverityType:
+      enum:
+      - CVSS_V2
+      - CVSS_V3
+      - CVSS_V4
+      title: VulnerabilitySeverityType
+      type: string
+    Over_Time:
+      anyOf:
+      - $ref: '#/components/schemas/HistoricalProvenanceOT'
+      - type: object
+      default: {}
+      title: Over Time
+    Provenance:
+      anyOf:
+      - $ref: '#/components/schemas/PackageAnnotation'
+      - type: object
+      default: {}
+      title: Provenance
+    Scores:
+      anyOf:
+      - $ref: '#/components/schemas/PersonAnnotation'
+      - type: object
+      default: {}
+      title: Scores
+    Sigstore:
+      anyOf:
+      - $ref: '#/components/schemas/ProvenanceData'
+      - type: object
+      default: {}
+      title: Sigstore
+    Scores_1:
+      anyOf:
+      - $ref: '#/components/schemas/RepositoryAnnotation'
+      - type: object
+      default: {}
+      title: Scores
+    Scores_2:
+      anyOf:
+      - $ref: '#/components/schemas/PackageAnnotation'
+      - type: object
+      default: {}
+      title: Scores
+    ValidationError_loc_inner:
+      anyOf:
+      - type: string
+      - type: integer
+  securitySchemes:
+    HTTPBearer:
+      scheme: bearer
+      type: http

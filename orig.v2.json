@@ -1,0 +1,3530 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Trusty API",
+    "description": "Trusty API",
+    "version": "v2"
+  },
+  "paths": {
+    "/v2/dependencies/{id}": {
+      "get": {
+        "tags": [
+          "package"
+        ],
+        "summary": "Get Dependencies Id",
+        "description": "Fetch the dependencies for a package given its id.\nThis includes the package's name, version, description, and other metadata about contributors.\n\nDependencyOptions:\nfilter (Optional[str]): CEL filter code to apply.\nsort_by (Optional[List[str]]): List of fields to sort by.\nsort_order (Optional[List[str]]): Corresponding list of sort orders.\nrecurse_limit (int): Maximum depth of recursion. Upper limit - should automatically stop at leaf nodes.\npage_from (int): Pagination start.\npage_to (int): Pagination end.\n\nFor details on how to use the filter look at the [CEL docs](https://cel.dev/overview/cel-overview)\nSome examples:\n- node.score == 0.0\n- node.score > 0.0 && node.score < 5\n- \"Apache-2.0\" in node.claims\n\nSee the [Trusty documentation](https://docs.stacklok.com/trusty/) for more information.",
+        "operationId": "v2_get_dependencies_id",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Filter"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": [],
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": [],
+              "title": "Sort Order"
+            }
+          },
+          {
+            "name": "recurse_limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Recurse Limit"
+            }
+          },
+          {
+            "name": "page_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Page From"
+            }
+          },
+          {
+            "name": "page_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Page To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DependencyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/dependencies": {
+      "get": {
+        "tags": [
+          "package"
+        ],
+        "summary": "Get Dependencies",
+        "description": "Fetch the dependencies for a package given its name version and type.\nThis includes the package's name, version, description, and other metadata about contributors.\n\nDependencyOptions:\nfilter (Optional[str]): CEL filter code to apply.\nsort_by (Optional[List[str]]): List of fields to sort by.\nsort_order (Optional[List[str]]): Corresponding list of sort orders.\nrecurse_limit (int): Maximum depth of recursion. Upper limit - should automatically stop at leaf nodes.\npage_from (int): Pagination start.\npage_to (int): Pagination end.\n\nFor details on how to use the filter look at the [CEL docs](https://cel.dev/overview/cel-overview)\nSome examples:\n- node.score == 0.0\n- node.score > 0.0 && node.score < 5\n- \"Apache-2.0\" in node.claims\nSee the [Trusty documentation](https://docs.stacklok.com/trusty/) for more information.",
+        "operationId": "v2_get_dependencies",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Package Name"
+            }
+          },
+          {
+            "name": "package_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PackageType",
+              "default": "pypi"
+            }
+          },
+          {
+            "name": "package_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Package Version"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Filter"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": [],
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": [],
+              "title": "Sort Order"
+            }
+          },
+          {
+            "name": "recurse_limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Recurse Limit"
+            }
+          },
+          {
+            "name": "page_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Page From"
+            }
+          },
+          {
+            "name": "page_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Page To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DependencyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/package/{id}": {
+      "get": {
+        "tags": [
+          "package"
+        ],
+        "summary": "Get Package",
+        "description": "Fetch the info for a package given its id.\nThis includes the package's name, version, description, and other metadata about contributors.",
+        "operationId": "v2_get_package",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustyPackageResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/package": {
+      "post": {
+        "tags": [
+          "package"
+        ],
+        "summary": "Post Package",
+        "description": "Fetch the info for a package given its id.\nThis includes the package's name, version, description, and other metadata about contributors.\nSee the [Trusty documentation](https://docs.stacklok.com/trusty/) for more information.",
+        "operationId": "v2_post_package",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array",
+                "title": "Ids"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TrustyPackageResult"
+                  },
+                  "type": "array",
+                  "title": "Response V2 Post Package"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/v2/pkg": {
+      "get": {
+        "tags": [
+          "package"
+        ],
+        "summary": "Get Pkg",
+        "description": "Fetch the metadata for a package.\n\nThis includes the package's name, version, description, and other metadata about contributors.\n\nSee the [Trusty documentation](https://docs.stacklok.com/trusty/) for more information.",
+        "operationId": "v2_get_pkg",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Package Name"
+            }
+          },
+          {
+            "name": "package_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PackageType",
+              "default": "pypi"
+            }
+          },
+          {
+            "name": "package_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Package Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustyPackageData"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/summary": {
+      "get": {
+        "tags": [
+          "package"
+        ],
+        "summary": "Get Summary",
+        "description": "Fetch the metadata for a package and compute the adjusted summary score.",
+        "operationId": "v2_get_summary",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Package Name"
+            }
+          },
+          {
+            "name": "package_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PackageType",
+              "default": "pypi"
+            }
+          },
+          {
+            "name": "package_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Package Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageSummaryAnnotation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/similar": {
+      "get": {
+        "tags": [
+          "package"
+        ],
+        "summary": "Get Similar",
+        "description": "Similar packages are those that have similar names to others.\n\nThis may or may not be a sign of typosquatting, depending on the provenance of the packages.\n\nSee [similar packages](similar_packages.md) for more information.",
+        "operationId": "v2_get_similar",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Package Name"
+            }
+          },
+          {
+            "name": "package_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PackageType",
+              "default": "pypi"
+            }
+          },
+          {
+            "name": "package_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Package Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageSimilarResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/alternatives": {
+      "get": {
+        "tags": [
+          "package"
+        ],
+        "summary": "Get Alternatives",
+        "description": "This will return a list of alternative packages to the one requested.\n\nIt is based on AI and will try to provide something with similar functionality.\n\nSee [alternatives](alternatives.md) for more information.",
+        "operationId": "v2_get_alternatives",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Package Name"
+            }
+          },
+          {
+            "name": "package_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PackageType",
+              "default": "pypi"
+            }
+          },
+          {
+            "name": "package_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Package Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageAlternatives"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/same-origin": {
+      "get": {
+        "tags": [
+          "package"
+        ],
+        "summary": "Get Same Origin",
+        "description": "This will return a list of packages sharing the same repo as the one requested.\nThis can be perfectly normal, many repos produce multiple artifacts,\nor it can be a sign of star-jacking, depending on the provenance of the packages.\n\nSee [shared origin](shared_origin.md) for more information.",
+        "operationId": "v2_get_same_origin",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Package Name"
+            }
+          },
+          {
+            "name": "package_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PackageType",
+              "default": "pypi"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SameOriginPackagesResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/malicious": {
+      "get": {
+        "tags": [
+          "package"
+        ],
+        "summary": "Get Malicious",
+        "description": "This will return a flag reporting whether the package is known malicious.\nThis is currently manually curated.",
+        "operationId": "v2_get_malicious",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Package Name"
+            }
+          },
+          {
+            "name": "package_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PackageType",
+              "default": "pypi"
+            }
+          },
+          {
+            "name": "package_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Package Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean",
+                  "title": "Response V2 Get Malicious"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/provenance": {
+      "get": {
+        "tags": [
+          "package"
+        ],
+        "summary": "Get Package Provenance",
+        "description": "This will return the provenance of the package with respect to the package origins.\nCan it be linked with a repo?\n\n[Historical provenance](provenance.md#historical-provenance-hp)\nThis contains the number of `tags` in the repo, the number of `versions`\nof the package, a count of the `common` tags and the ratio of tags to common\nas `overlap`.\nAlso includes the historical information for tags, versions and matches for the given period type and count,\nby default the last 12 months from the current date.\n\nSee [provenance](provenance.md) for more information.",
+        "operationId": "v2_get_package_provenance",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Package Name"
+            }
+          },
+          {
+            "name": "package_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PackageType",
+              "default": "pypi"
+            }
+          },
+          {
+            "name": "package_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Package Version"
+            }
+          },
+          {
+            "name": "period_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "month",
+              "title": "Period Type"
+            }
+          },
+          {
+            "name": "period_count",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 12,
+              "title": "Period Count"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProvenanceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/contributor": {
+      "get": {
+        "tags": [
+          "contributor"
+        ],
+        "summary": "Get Contributor Report",
+        "description": "Fetch the report for a contributor.",
+        "operationId": "v2_get_contributor_report",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "login",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Login"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributorResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/repository": {
+      "get": {
+        "tags": [
+          "repository"
+        ],
+        "summary": "Get Repository Report",
+        "description": "Fetch the report for a repository.",
+        "operationId": "v2_get_repository_report",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/versions": {
+      "get": {
+        "tags": [
+          "versions"
+        ],
+        "summary": "Get Versions",
+        "description": "Fetch a list of versions for a package.",
+        "operationId": "get_versions_v2_versions_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Package Name"
+            }
+          },
+          {
+            "name": "package_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PackageType",
+              "default": "pypi"
+            }
+          },
+          {
+            "name": "version_prefix",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Version Prefix"
+            }
+          },
+          {
+            "name": "version_fragment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Version Fragment"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustySummarizedPackageVersionResults"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/vulnerabilities": {
+      "get": {
+        "tags": [
+          "vulnerabilities"
+        ],
+        "summary": "Get Vulnerabilities",
+        "description": "Fetch a list of vulnerabilities for all versions of a package.\nIf a version is provided, only the vulnerabilities for that specific version are returned.",
+        "operationId": "get_vulnerabilities_v2_vulnerabilities_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Package Name"
+            }
+          },
+          {
+            "name": "package_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PackageType",
+              "default": "pypi"
+            }
+          },
+          {
+            "name": "package_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Package Version"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Token"
+            }
+          },
+          {
+            "name": "num_vulnerabilities",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 999,
+              "title": "Num Vulnerabilities"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VulnerabilityListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/vulnerability": {
+      "get": {
+        "tags": [
+          "vulnerabilities"
+        ],
+        "summary": "Get Vulnerability",
+        "description": "Fetch the data for a vulnerability.",
+        "operationId": "get_vulnerability_v2_vulnerability_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "osv_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Osv Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VulnerabilityResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/license": {
+      "get": {
+        "tags": [
+          "license"
+        ],
+        "summary": "Get Licence",
+        "description": "Fetch the license claim for a specified package or repository.\nThe package_name, package_type and version are specified as parameters.",
+        "operationId": "v2_get_licence",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Package Name"
+            }
+          },
+          {
+            "name": "package_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PackageType",
+              "default": "pypi"
+            }
+          },
+          {
+            "name": "package_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Package Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/License"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/license/{id}": {
+      "get": {
+        "tags": [
+          "license"
+        ],
+        "summary": "Get Licence Owner",
+        "description": "Fetch the license claim for a specified package or repository.\nThe UUID of the package is supplied on the path to fetch its associated license claims.",
+        "operationId": "v2_get_licence_owner",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/License"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/license/claim/{id}": {
+      "get": {
+        "tags": [
+          "license"
+        ],
+        "summary": "Get Licence Claim Id",
+        "description": "Fetch the license claim by id. The UUID of the claim is specified on the path.",
+        "operationId": "v2_get_licence_claim_id",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LicenseClaim"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AlternativesStatus": {
+        "type": "string",
+        "enum": [
+          "in_progress",
+          "complete"
+        ],
+        "title": "AlternativesStatus"
+      },
+      "ContributorResult": {
+        "properties": {
+          "contributor_data": {
+            "$ref": "#/components/schemas/PackageContributorData"
+          },
+          "contributor_repos": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RepositoryData"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contributor Repos",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "ContributorResult"
+      },
+      "DependenciesSummary": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "default": 0
+          },
+          "max_score": {
+            "type": "number",
+            "title": "Max Score",
+            "default": 0.0
+          },
+          "min_score": {
+            "type": "number",
+            "title": "Min Score",
+            "default": 0.0
+          },
+          "mean_score": {
+            "type": "number",
+            "title": "Mean Score",
+            "default": 0.0
+          },
+          "declared_licenses": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Declared Licenses",
+            "default": {}
+          },
+          "depths": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Depths",
+            "default": {}
+          },
+          "vuln_severity": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Vuln Severity",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "title": "DependenciesSummary"
+      },
+      "Dependency": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "version_name": {
+            "type": "string",
+            "title": "Version Name"
+          },
+          "package_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Package Id"
+          },
+          "version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Version Id"
+          },
+          "parents": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Parents"
+          },
+          "depths": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Depths"
+          },
+          "paths": {
+            "items": {
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Paths",
+            "default": []
+          },
+          "activity_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity Score"
+          },
+          "declared_license": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declared License"
+          },
+          "vuln_severity": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vuln Severity"
+          },
+          "mal_osv_id": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mal Osv Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "type",
+          "version_name",
+          "package_id",
+          "version_id",
+          "parents",
+          "depths"
+        ],
+        "title": "Dependency"
+      },
+      "DependencyResponse": {
+        "properties": {
+          "@context": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "@Context",
+            "default": {}
+          },
+          "summary": {
+            "$ref": "#/components/schemas/DependenciesSummary"
+          },
+          "dependencies": {
+            "items": {
+              "$ref": "#/components/schemas/Dependency"
+            },
+            "type": "array",
+            "title": "Dependencies"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary",
+          "dependencies"
+        ],
+        "title": "DependencyResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HistoricalProvenance": {
+        "properties": {
+          "overlap": {
+            "type": "number",
+            "title": "Overlap",
+            "default": 0
+          },
+          "common": {
+            "type": "number",
+            "title": "Common",
+            "default": 0
+          },
+          "tags": {
+            "type": "number",
+            "title": "Tags",
+            "default": 0
+          },
+          "versions": {
+            "type": "number",
+            "title": "Versions",
+            "default": 0
+          },
+          "over_time": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HistoricalProvenanceOT"
+              },
+              {
+                "type": "object"
+              }
+            ],
+            "title": "Over Time",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "title": "HistoricalProvenance",
+        "description": "[Historical provenance](provenance.md#historical-provenance-hp)\nThis contains the number of `tags` in the repo, the number of `versions`\nof the package, a count of the `common` tags and the ratio of tags to common\nas `overlap`."
+      },
+      "HistoricalProvenanceOT": {
+        "properties": {
+          "period_type": {
+            "type": "string",
+            "title": "Period Type",
+            "default": "month"
+          },
+          "period_count": {
+            "type": "integer",
+            "title": "Period Count",
+            "default": 12
+          },
+          "hp_over_time": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PeriodHistoricalProvenance"
+            },
+            "type": "object",
+            "title": "Hp Over Time",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "title": "HistoricalProvenanceOT"
+      },
+      "License": {
+        "properties": {
+          "claims": {
+            "items": {
+              "$ref": "#/components/schemas/LicenseClaim"
+            },
+            "type": "array",
+            "title": "Claims",
+            "default": []
+          },
+          "license": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "License",
+        "description": "All the licence information about a package."
+      },
+      "LicenseClaim": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "owner_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Owner Id"
+          },
+          "licenses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Licenses",
+            "default": []
+          },
+          "claim": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim",
+            "default": ""
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content",
+            "default": ""
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url",
+            "default": ""
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "default": ""
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "LicenseClaim",
+        "description": "A claim about a license."
+      },
+      "PackageAlternatives": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/AlternativesStatus",
+            "default": "in_progress"
+          },
+          "packages": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PackageBasicInfo"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Packages",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "PackageAlternatives"
+      },
+      "PackageAnnotation": {
+        "properties": {
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "description": {
+            "title": "Description",
+            "default": {}
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "updated_at"
+        ],
+        "title": "PackageAnnotation",
+        "description": "This represents a package annotation."
+      },
+      "PackageBasicInfo": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "package_name": {
+            "type": "string",
+            "title": "Package Name"
+          },
+          "package_type": {
+            "$ref": "#/components/schemas/PackageType"
+          },
+          "package_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Package Version"
+          },
+          "repo_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Repo Description",
+            "default": ""
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "is_malicious": {
+            "type": "boolean",
+            "title": "Is Malicious",
+            "default": false
+          },
+          "provenance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackageAnnotation"
+              },
+              {
+                "type": "object"
+              }
+            ],
+            "title": "Provenance",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "package_name",
+          "package_type",
+          "package_version"
+        ],
+        "title": "PackageBasicInfo",
+        "description": "This represents the basic information about a package."
+      },
+      "PackageContributorData": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author",
+            "default": ""
+          },
+          "author_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Email",
+            "default": ""
+          },
+          "login": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Login",
+            "default": ""
+          },
+          "avatar_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar Url",
+            "default": ""
+          },
+          "gravatar_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gravatar Id",
+            "default": ""
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url",
+            "default": ""
+          },
+          "html_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Html Url",
+            "default": ""
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company",
+            "default": ""
+          },
+          "blog": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blog",
+            "default": ""
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location",
+            "default": ""
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email",
+            "default": ""
+          },
+          "hireable": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hireable"
+          },
+          "twitter_username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Twitter Username",
+            "default": ""
+          },
+          "public_repos": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Repos"
+          },
+          "public_gists": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Gists"
+          },
+          "followers": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Followers"
+          },
+          "following": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Following"
+          },
+          "scores": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonAnnotation"
+              },
+              {
+                "type": "object"
+              }
+            ],
+            "title": "Scores",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "PackageContributorData"
+      },
+      "PackageMaliciousPayload": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details",
+            "default": ""
+          },
+          "published": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published"
+          },
+          "modified": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modified"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary"
+        ],
+        "title": "PackageMaliciousPayload",
+        "description": "This represents the payload details for a malicious package."
+      },
+      "PackageSimilarResult": {
+        "properties": {
+          "similar_package_names": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PackageBasicInfo"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Similar Package Names"
+          }
+        },
+        "type": "object",
+        "required": [
+          "similar_package_names"
+        ],
+        "title": "PackageSimilarResult"
+      },
+      "PackageStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "initial",
+          "neighbours",
+          "complete",
+          "failed",
+          "scoring",
+          "propagate",
+          "deleted"
+        ],
+        "title": "PackageStatus"
+      },
+      "PackageSummaryAnnotation": {
+        "properties": {
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "description": {
+            "title": "Description",
+            "default": {}
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SummaryAnnotationStatus",
+            "default": "in_progress"
+          }
+        },
+        "type": "object",
+        "required": [
+          "updated_at"
+        ],
+        "title": "PackageSummaryAnnotation",
+        "description": "This represents a package annotation."
+      },
+      "PackageType": {
+        "type": "string",
+        "enum": [
+          "pypi",
+          "npm",
+          "crates",
+          "maven",
+          "go"
+        ],
+        "title": "PackageType"
+      },
+      "PeriodHistoricalProvenance": {
+        "properties": {
+          "tags": {
+            "type": "integer",
+            "title": "Tags",
+            "default": 0
+          },
+          "vers": {
+            "type": "integer",
+            "title": "Vers",
+            "default": 0
+          },
+          "matches": {
+            "type": "integer",
+            "title": "Matches",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "PeriodHistoricalProvenance"
+      },
+      "PersonAnnotation": {
+        "properties": {
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "description": {
+            "title": "Description",
+            "default": {}
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "updated_at"
+        ],
+        "title": "PersonAnnotation",
+        "description": "This represents a package annotation."
+      },
+      "ProvenanceData": {
+        "properties": {
+          "source_repo": {
+            "type": "string",
+            "title": "Source Repo",
+            "default": ""
+          },
+          "workflow": {
+            "type": "string",
+            "title": "Workflow",
+            "default": ""
+          },
+          "issuer": {
+            "type": "string",
+            "title": "Issuer",
+            "default": ""
+          },
+          "token_issuer": {
+            "type": "string",
+            "title": "Token Issuer",
+            "default": ""
+          },
+          "transparency": {
+            "type": "string",
+            "title": "Transparency",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "ProvenanceData"
+      },
+      "ProvenanceResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "missing"
+          },
+          "hp": {
+            "$ref": "#/components/schemas/HistoricalProvenance",
+            "default": {
+              "overlap": 0.0,
+              "common": 0.0,
+              "tags": 0.0,
+              "versions": 0.0,
+              "over_time": {}
+            }
+          },
+          "sigstore": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProvenanceData"
+              },
+              {
+                "type": "object"
+              }
+            ],
+            "title": "Sigstore",
+            "default": {}
+          },
+          "score": {
+            "type": "number",
+            "title": "Score",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "ProvenanceResponse"
+      },
+      "RepositoryAnnotation": {
+        "properties": {
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "description": {
+            "title": "Description",
+            "default": {}
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "updated_at"
+        ],
+        "title": "RepositoryAnnotation",
+        "description": "This represents a package annotation."
+      },
+      "RepositoryData": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "default": ""
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url",
+            "default": ""
+          },
+          "stargazers_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stargazers Count"
+          },
+          "watchers_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Watchers Count"
+          },
+          "forks_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forks Count"
+          },
+          "open_issues_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Issues Count"
+          },
+          "contributor_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contributor Count"
+          },
+          "scores": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RepositoryAnnotation"
+              },
+              {
+                "type": "object"
+              }
+            ],
+            "title": "Scores",
+            "default": {}
+          },
+          "last_update": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Update"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "RepositoryData"
+      },
+      "RepositoryResult": {
+        "properties": {
+          "repository": {
+            "$ref": "#/components/schemas/RepositoryData"
+          },
+          "contributors": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PackageContributorData"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contributors"
+          },
+          "packages": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/TrustyPackageData"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Packages",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "RepositoryResult"
+      },
+      "SameOriginPackagesResult": {
+        "properties": {
+          "next_token": {
+            "type": "string",
+            "title": "Next Token"
+          },
+          "same_origin_packages": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PackageBasicInfo"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Same Origin Packages",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "next_token"
+        ],
+        "title": "SameOriginPackagesResult"
+      },
+      "SummaryAnnotationStatus": {
+        "type": "string",
+        "enum": [
+          "in_progress",
+          "complete"
+        ],
+        "title": "SummaryAnnotationStatus"
+      },
+      "TrustyPackageData": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PackageStatus"
+          },
+          "status_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Code",
+            "default": ""
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "$ref": "#/components/schemas/PackageType"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version",
+            "default": ""
+          },
+          "version_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Date"
+          },
+          "author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author",
+            "default": ""
+          },
+          "author_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Email",
+            "default": ""
+          },
+          "package_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Package Description",
+            "default": ""
+          },
+          "repo_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Repo Description",
+            "default": ""
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin",
+            "default": ""
+          },
+          "stargazers_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stargazers Count"
+          },
+          "watchers_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Watchers Count"
+          },
+          "home_page": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Home Page",
+            "default": ""
+          },
+          "has_issues": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Issues"
+          },
+          "has_projects": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Projects"
+          },
+          "has_downloads": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Downloads"
+          },
+          "forks_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forks Count"
+          },
+          "archived": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archived"
+          },
+          "is_deprecated": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Deprecated"
+          },
+          "disabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disabled"
+          },
+          "open_issues_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Issues Count"
+          },
+          "visibility": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visibility",
+            "default": ""
+          },
+          "default_branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Branch",
+            "default": ""
+          },
+          "repository_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Repository Id"
+          },
+          "repository_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Repository Name",
+            "default": ""
+          },
+          "contributor_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contributor Count"
+          },
+          "public_repos": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Repos"
+          },
+          "public_gists": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Gists"
+          },
+          "followers": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Followers"
+          },
+          "following": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Following"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackageContributorData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contributors": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PackageContributorData"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contributors"
+          },
+          "last_update": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Update"
+          },
+          "scores": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackageAnnotation"
+              },
+              {
+                "type": "object"
+              }
+            ],
+            "title": "Scores",
+            "default": {}
+          },
+          "malicious": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackageMaliciousPayload"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "has_triggered_reingestion": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Triggered Reingestion",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "name",
+          "type"
+        ],
+        "title": "TrustyPackageData"
+      },
+      "TrustyPackageResult": {
+        "properties": {
+          "package_name": {
+            "type": "string",
+            "title": "Package Name"
+          },
+          "package_type": {
+            "$ref": "#/components/schemas/PackageType"
+          },
+          "package_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Package Version",
+            "default": ""
+          },
+          "package_data": {
+            "$ref": "#/components/schemas/TrustyPackageData"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PackageStatus",
+            "default": "pending"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/PackageAnnotation",
+            "default": {
+              "description": {}
+            }
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/PackageAnnotation",
+            "default": {
+              "description": {}
+            }
+          },
+          "activity": {
+            "$ref": "#/components/schemas/PackageAnnotation",
+            "default": {
+              "description": {}
+            }
+          },
+          "typosquatting": {
+            "$ref": "#/components/schemas/PackageAnnotation",
+            "default": {
+              "description": {}
+            }
+          },
+          "alternatives": {
+            "$ref": "#/components/schemas/PackageAlternatives",
+            "default": {
+              "status": "in_progress",
+              "packages": []
+            }
+          },
+          "similar_package_names": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PackageBasicInfo"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Similar Package Names",
+            "default": []
+          },
+          "same_origin_packages_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Same Origin Packages Count",
+            "default": 0
+          },
+          "has_triggered_reingestion": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Triggered Reingestion",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "package_name",
+          "package_type",
+          "package_data"
+        ],
+        "title": "TrustyPackageResult",
+        "description": "This result repesents all the intelligence about a package.\n\nIt includes component scores, typosquatting, activity, and provenance\nand also a summary.\n\nSee [scoring](https://github.com/stacklok/trusty/blob/main/docs/scoring.md) for more information."
+      },
+      "TrustySummarizedPackageVersion": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id",
+            "default": "00000000-0000-0000-0000-000000000000"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "version_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Date"
+          },
+          "is_deprecated": {
+            "type": "boolean",
+            "title": "Is Deprecated",
+            "default": false
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "version_date",
+          "score"
+        ],
+        "title": "TrustySummarizedPackageVersion"
+      },
+      "TrustySummarizedPackageVersionResults": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/TrustySummarizedPackageVersion"
+            },
+            "type": "array",
+            "title": "Results"
+          },
+          "next_token": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Token"
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TrustySummarizedPackageVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "results"
+        ],
+        "title": "TrustySummarizedPackageVersionResults"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VulnerabilityListResponse": {
+        "properties": {
+          "vulnerabilities": {
+            "items": {
+              "$ref": "#/components/schemas/VulnerabilityScores"
+            },
+            "type": "array",
+            "title": "Vulnerabilities"
+          },
+          "next_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vulnerabilities"
+        ],
+        "title": "VulnerabilityListResponse"
+      },
+      "VulnerabilityResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "data": {
+            "type": "object",
+            "title": "Data"
+          },
+          "osv_id": {
+            "type": "string",
+            "title": "Osv Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "data",
+          "osv_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "VulnerabilityResponse"
+      },
+      "VulnerabilityScores": {
+        "properties": {
+          "osv_identifier": {
+            "type": "string",
+            "title": "Osv Identifier"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "severity": {
+            "items": {
+              "$ref": "#/components/schemas/VulnerabilitySeverity"
+            },
+            "type": "array",
+            "title": "Severity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "osv_identifier",
+          "summary",
+          "severity"
+        ],
+        "title": "VulnerabilityScores"
+      },
+      "VulnerabilitySeverity": {
+        "properties": {
+          "severity_type": {
+            "$ref": "#/components/schemas/VulnerabilitySeverityType"
+          },
+          "severity_level": {
+            "$ref": "#/components/schemas/VulnerabilitySeverityLevel"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "severity_type",
+          "severity_level",
+          "score"
+        ],
+        "title": "VulnerabilitySeverity"
+      },
+      "VulnerabilitySeverityLevel": {
+        "type": "string",
+        "enum": [
+          "None",
+          "Low",
+          "Medium",
+          "High",
+          "Critical"
+        ],
+        "title": "VulnerabilitySeverityLevel"
+      },
+      "VulnerabilitySeverityType": {
+        "type": "string",
+        "enum": [
+          "CVSS_V2",
+          "CVSS_V3",
+          "CVSS_V4"
+        ],
+        "title": "VulnerabilitySeverityType"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
