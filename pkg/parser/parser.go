@@ -21,7 +21,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/stacklok/trusty-sdk-go/pkg/types"
+	"github.com/stacklok/trusty-sdk-go/pkg/v1/types"
 )
 
 // ParsingFunction is a function type that takes a string as input and returns

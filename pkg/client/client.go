@@ -13,308 +13,35 @@
 // limitations under the License.
 
 // Package client provides a rest client to talk to the Trusty API.
+//
+// Deprecated: moved to pkg/v1/client
 package client
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"net/http"
-	"net/url"
-	"os"
-	"strings"
-	"time"
-
-	packageurl "github.com/package-url/packageurl-go"
-	khttp "sigs.k8s.io/release-utils/http"
-
-	"github.com/stacklok/trusty-sdk-go/pkg/types"
-)
-
-const (
-	defaultEndpoint = "https://gh.trustypkg.dev"
-	endpointEnvVar  = "TRUSTY_ENDPOINT"
-	reportPath      = "v1/report"
+	v1 "github.com/stacklok/trusty-sdk-go/pkg/v1/client"
 )
 
 // Options configures the Trusty API client
-type Options struct {
-	HttpClient netClient
-
-	// Workers is the number of parallel request the client makes to the API
-	Workers int
-
-	// BaseURL of the Trusty API
-	BaseURL string
-
-	// WaitForIngestion causes the http client to wait and retry if Trusty
-	// responds with a successful request but with a "pending" or "scoring" status
-	WaitForIngestion bool
-
-	// ErrOnFailedIngestion makes the client return an error on a Report call
-	// when the ingestion failed internally withing trusty. If false, the
-	// report data willbe returned but the application needs to check the
-	// ingestion status and handle it.
-	ErrOnFailedIngestion bool
-
-	// IngestionRetryWait is the number of seconds that the client will wait for
-	// package ingestion before retrying.
-	IngestionRetryWait int
-
-	// IngestionMaxRetries is the maximum number of requests the client will
-	// send while waiting for ingestion to finish
-	IngestionMaxRetries int
-}
+//
+// Deprecated: moved to pkg/v1/client
+type Options = v1.Options
 
 // DefaultOptions is the default Trusty client options set
-var DefaultOptions = Options{
-	Workers:            2,
-	BaseURL:            defaultEndpoint,
-	WaitForIngestion:   true,
-	IngestionRetryWait: 5,
-}
-
-type netClient interface {
-	GetRequestGroup([]string) ([]*http.Response, []error)
-	GetRequest(string) (*http.Response, error)
-}
+//
+// Deprecated: moved to pkg/v1/client
+var DefaultOptions = v1.DefaultOptions
 
 // New returns a new Trusty REST client
-func New() *Trusty {
-	opts := DefaultOptions
-	opts.HttpClient = khttp.NewAgent().WithMaxParallel(opts.Workers).WithFailOnHTTPError(true)
-	if ep := os.Getenv(endpointEnvVar); ep != "" {
-		opts.BaseURL = ep
-	}
-	return NewWithOptions(opts)
-}
+//
+// Deprecated: moved to pkg/v1/client
+var New = v1.New
 
 // NewWithOptions returns a new client with the specified options set
-func NewWithOptions(opts Options) *Trusty {
-	if opts.BaseURL == "" {
-		opts.BaseURL = DefaultOptions.BaseURL
-	}
-
-	if opts.Workers == 0 {
-		opts.Workers = DefaultOptions.Workers
-	}
-
-	if opts.HttpClient == nil {
-		opts.HttpClient = khttp.NewAgent().WithMaxParallel(opts.Workers).WithFailOnHTTPError(true)
-	}
-
-	return &Trusty{
-		Options: opts,
-	}
-}
-
-func urlFromEndpointAndPaths(
-	baseUrl, endpoint string, params map[string]string,
-) (*url.URL, error) {
-	u, err := url.Parse(baseUrl)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
-	}
-	u = u.JoinPath(endpoint)
-
-	// Add query parameters for package_name and package_type
-	q := u.Query()
-	for k, v := range params {
-		q.Set(k, v)
-	}
-	u.RawQuery = q.Encode()
-
-	return u, nil
-}
+//
+// Deprecated: moved to pkg/v1/client
+var NewWithOptions = v1.NewWithOptions
 
 // Trusty is the main trusty client
-type Trusty struct {
-	Options Options
-}
-
-// GroupReport queries the Trusty API in parallel for a group of dependencies.
-func (t *Trusty) GroupReport(_ context.Context, deps []*types.Dependency) ([]*types.Reply, error) {
-	urls := []string{}
-	for _, dep := range deps {
-		u, err := t.PackageEndpoint(dep)
-		if err != nil {
-			return nil, fmt.Errorf("unable to get endpoint for: %q: %w", dep.Name, err)
-		}
-		urls = append(urls, u)
-	}
-
-	responses, errs := t.Options.HttpClient.GetRequestGroup(urls)
-	if err := errors.Join(errs...); err != nil {
-		return nil, fmt.Errorf("fetching data from Trusty: %w", err)
-	}
-
-	// Parse the replies
-	resps := make([]*types.Reply, len(responses))
-	for i := range responses {
-		defer responses[i].Body.Close()
-		dec := json.NewDecoder(responses[i].Body)
-		resps[i] = &types.Reply{}
-		if err := dec.Decode(resps[i]); err != nil {
-			return nil, fmt.Errorf("could not unmarshal response #%d: %w", i, err)
-		}
-	}
-	return resps, nil
-}
-
-// PurlEndpoint returns the API endpoint url to query for data about a purl
-func (t *Trusty) PurlEndpoint(purl string) (string, error) {
-	dep, err := t.PurlToDependency(purl)
-	if err != nil {
-		return "", fmt.Errorf("getting dependency from %q", purl)
-	}
-	ep, err := t.PackageEndpoint(dep)
-	if err != nil {
-		return "", fmt.Errorf("getting package endpoint: %w", err)
-	}
-	return ep, nil
-}
-
-// PackageEndpoint takes a dependency and returns the Trusty endpoint to
-// query data about it.
-func (t *Trusty) PackageEndpoint(dep *types.Dependency) (string, error) {
-	// Check dependency data:
-	errs := []error{}
-	if dep.Name == "" {
-		errs = append(errs, fmt.Errorf("dependency has no name defined"))
-	}
-	if dep.Ecosystem.AsString() == "" {
-		errs = append(errs, fmt.Errorf("dependency has no ecosystem set"))
-	}
-
-	if err := errors.Join(errs...); err != nil {
-		return "", err
-	}
-
-	u, err := url.Parse(t.Options.BaseURL + "/" + reportPath)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse endpoint: %w", err)
-	}
-
-	params := map[string]string{
-		"package_name": dep.Name,
-		"package_type": strings.ToLower(dep.Ecosystem.AsString()),
-	}
-
-	// Add query parameters for package_name and package_type
-	q := u.Query()
-	for k, v := range params {
-		q.Set(k, v)
-	}
-	u.RawQuery = q.Encode()
-
-	return u.String(), nil
-}
-
-// PurlToEcosystem returns a trusty ecosystem constant from a Package URL's type
-func (_ *Trusty) PurlToEcosystem(purl string) types.Ecosystem {
-	switch {
-	case strings.HasPrefix(purl, "pkg:golang"):
-		return types.ECOSYSTEM_GO
-	case strings.HasPrefix(purl, "pkg:npm"):
-		return types.ECOSYSTEM_NPM
-	case strings.HasPrefix(purl, "pkg:pypi"):
-		return types.ECOSYSTEM_PYPI
-	default:
-		return types.Ecosystem(0)
-	}
-}
-
-// PurlToDependency takes a string with a package url
-func (t *Trusty) PurlToDependency(purlString string) (*types.Dependency, error) {
-	e := t.PurlToEcosystem(purlString)
-	if e == 0 {
-		// Ecosystem nil or not supported
-		return nil, fmt.Errorf("ecosystem not supported")
-	}
-
-	purl, err := packageurl.FromString(purlString)
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse package url: %w", err)
-	}
-	name := purl.Name
-	if purl.Namespace != "" {
-		name = purl.Namespace + "/" + purl.Name
-	}
-	return &types.Dependency{
-		Ecosystem: e,
-		Name:      name,
-		Version:   purl.Version,
-	}, nil
-}
-
-// Report returns a dependency report with all the data that Trusty has
-// available for a package.
-func (t *Trusty) Report(_ context.Context, dep *types.Dependency) (*types.Reply, error) {
-	u, err := t.PackageEndpoint(dep)
-	if err != nil {
-		return nil, fmt.Errorf("computing package endpoint: %w", err)
-	}
-
-	var r types.Reply
-	tries := 0
-	for {
-		resp, err := t.Options.HttpClient.GetRequest(u)
-		if err != nil {
-			return nil, fmt.Errorf("could not send request: %w", err)
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("received non-200 response: %d", resp.StatusCode)
-		}
-
-		dec := json.NewDecoder(resp.Body)
-		if err := dec.Decode(&r); err != nil {
-			return nil, fmt.Errorf("could not unmarshal response: %w", err)
-		}
-		fmt.Printf("Attempt #%d to fetch package, status: %s", tries, r.PackageData.Status)
-
-		shouldRetry, err := evalRetry(r.PackageData.Status, t.Options)
-		if err != nil {
-			return nil, err
-		}
-
-		if !shouldRetry {
-			break
-		}
-
-		tries++
-		if tries > t.Options.IngestionMaxRetries {
-			return nil, fmt.Errorf("time out reached waiting for package ingestion")
-		}
-		time.Sleep(time.Duration(t.Options.IngestionRetryWait) * time.Second)
-	}
-
-	return &r, err
-}
-
-func evalRetry(status string, opts Options) (shouldRetry bool, err error) {
-	// First, error if the ingestion status is invalid
-	if status != types.IngestStatusFailed && status != types.IngestStatusComplete &&
-		status != types.IngestStatusPending && status != types.IngestStatusScoring {
-
-		return false, fmt.Errorf("unexpected ingestion status when querying package")
-	}
-
-	if status == types.IngestStatusFailed && opts.ErrOnFailedIngestion {
-		return false, fmt.Errorf("upstream error ingesting package data")
-	}
-
-	// Package ingestion is ready
-	if status == types.IngestStatusComplete {
-		return false, nil
-	}
-
-	// Client configured to return raw response (even when package is not ready)
-	if !opts.WaitForIngestion || status == types.IngestStatusFailed {
-		return false, nil
-	}
-
-	return true, nil
-}
+//
+// Deprecated: moved to pkg/v1/client
+type Trusty = v1.Trusty

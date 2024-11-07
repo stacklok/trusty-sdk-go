@@ -14,112 +14,77 @@
 
 package types
 
-import "time"
+import (
+	v1 "github.com/stacklok/trusty-sdk-go/pkg/v1/types"
+)
 
 // Reply is the response from the package report API
-type Reply struct {
-	PackageName             string           `json:"package_name"`
-	PackageType             string           `json:"package_type"`
-	PackageVersion          string           `json:"package_version"`
-	Status                  string           `json:"status"`
-	Summary                 ScoreSummary     `json:"summary"`
-	Provenance              *Provenance      `json:"provenance"`
-	Activity                *Activity        `json:"activity"`
-	Typosquatting           *Typosquatting   `json:"typosquatting"`
-	Alternatives            AlternativesList `json:"alternatives"`
-	PackageData             PackageData      `json:"package_data"`
-	SameOriginPackagesCount int              `json:"same_origin_packages_count"`
-}
+//
+// Deprecated: moved to pkg/v1/types
+type Reply = v1.Reply
 
 // Activity captures a package's activity score
-type Activity struct {
-	Score       float64             `json:"score"`
-	Description ActivityDescription `json:"description"`
-}
+//
+// Deprecated: moved to pkg/v1/types
+type Activity = v1.Activity
 
 // ActivityDescription captures the fields of the activuty score
-type ActivityDescription struct {
-	Repository float64 `json:"repo"`
-	User       float64 `json:"user"`
-	// UpdatedAt  *time.Time `json:"updated_at"`
-}
+//
+// Deprecated: moved to pkg/v1/types
+type ActivityDescription = v1.ActivityDescription
 
 // Typosquatting score for the package's name
-type Typosquatting struct {
-	Score       float64                  `json:"score"`
-	Description TyposquattingDescription `json:"description"`
-	// UpdatedAt   *time.Time               `json:"updated_at"`
-}
+//
+// Deprecated: moved to pkg/v1/types
+type Typosquatting = v1.Typosquatting
 
 // TyposquattingDescription captures the dat details of the typosquatting score
-type TyposquattingDescription struct {
-	TotalSimilarNames int `json:"total_similar_names"`
-}
+//
+// Deprecated: moved to pkg/v1/types
+type TyposquattingDescription = v1.TyposquattingDescription
 
 // Alternative is an alternative package returned from the package intelligence API
-type Alternative struct {
-	PackageName    string  `json:"package_name"`
-	Score          float64 `json:"score"`
-	PackageNameURL string
-}
+//
+// Deprecated: moved to pkg/v1/types
+type Alternative = v1.Alternative
 
 // AlternativesList is the alternatives block in the trusty API response
-type AlternativesList struct {
-	Status   string        `json:"status"`
-	Packages []Alternative `json:"packages"`
-}
+//
+// Deprecated: moved to pkg/v1/types
+type AlternativesList = v1.AlternativesList
 
 // ScoreSummary is the summary score returned from the package intelligence API
-type ScoreSummary struct {
-	Score       *float64       `json:"score"`
-	Description map[string]any `json:"description"`
-}
+//
+// Deprecated: moved to pkg/v1/types
+type ScoreSummary = v1.ScoreSummary
 
 // PackageData contains the data about the queried package
-type PackageData struct {
-	Archived   bool           `json:"archived"`
-	Deprecated bool           `json:"is_deprecated"`
-	Malicious  *MaliciousData `json:"malicious"`
-	Status     string         `json:"status"`
-	StatusCode string         `json:"status_code"`
-}
+//
+// Deprecated: moved to pkg/v1/types
+type PackageData = v1.PackageData
 
 // MaliciousData contains the security details when a dependency is malicious
-type MaliciousData struct {
-	Summary   string     `json:"summary"`
-	Details   string     `json:"details"`
-	Published *time.Time `json:"published"`
-	Modified  *time.Time `json:"modified"`
-	Source    string     `json:"source"`
-}
+//
+// Deprecated: moved to pkg/v1/types
+type MaliciousData = v1.MaliciousData
 
 // Provenance has the package's provenance score and provenance type components
-type Provenance struct {
-	Score       float64               `json:"score"`
-	Description ProvenanceDescription `json:"description"`
-	// UpdatedAt   *time.Time            `json:"updated_at"`
-}
+//
+// Deprecated: moved to pkg/v1/types
+type Provenance = v1.Provenance
 
 // ProvenanceDescription contians the provenance types
-type ProvenanceDescription struct {
-	Historical HistoricalProvenance `json:"hp"`
-	Sigstore   SigstoreProvenance   `json:"sigstore"`
-}
+//
+// Deprecated: moved to pkg/v1/types
+type ProvenanceDescription = v1.ProvenanceDescription
 
 // HistoricalProvenance has the historical provenance components from a package
-type HistoricalProvenance struct {
-	Tags     float64 `json:"tags"`
-	Common   float64 `json:"common"`
-	Overlap  float64 `json:"overlap"`
-	Versions float64 `json:"versions"`
-}
+//
+// Deprecated: moved to pkg/v1/types
+type HistoricalProvenance = v1.HistoricalProvenance
 
 // SigstoreProvenance has the sigstore certificate data when a package was signed
 // using a github actions workflow
-type SigstoreProvenance struct {
-	Issuer           string `json:"issuer"`
-	Workflow         string `json:"workflow"`
-	SourceRepository string `json:"source_repo"`
-	TokenIssuer      string `json:"token_issuer"`
-	Transparency     string `json:"transparency"`
-}
+//
+// Deprecated: moved to pkg/v1/types
+type SigstoreProvenance = v1.SigstoreProvenance
