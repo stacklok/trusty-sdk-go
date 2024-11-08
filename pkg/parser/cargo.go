@@ -18,7 +18,7 @@ package parser
 import (
 	"github.com/BurntSushi/toml"
 
-	"github.com/stacklok/trusty-sdk-go/pkg/types"
+	"github.com/stacklok/trusty-sdk-go/pkg/v1/types"
 )
 
 // ParseCargoToml parses the content of a Cargo.toml file and returns a slice of dependencies.

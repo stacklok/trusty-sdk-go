@@ -18,7 +18,7 @@ package parser
 import (
 	"encoding/json"
 
-	"github.com/stacklok/trusty-sdk-go/pkg/types"
+	"github.com/stacklok/trusty-sdk-go/pkg/v1/types"
 )
 
 // ParsePackageJSON parses package.json content and extracts dependencies

@@ -14,72 +14,78 @@
 // limitations under the License.
 
 // Package types is the collection of main data types used by the Trusty libraries
-//
-// Deprecated: moved to pkg/v1/types
 package types
 
-import (
-	v1 "github.com/stacklok/trusty-sdk-go/pkg/v1/types"
-)
-
 // Ecosystem is an identifier of a packaging system supported by Trusty
-//
-// Deprecated: moved to pkg/v1/types
-type Ecosystem = v1.Ecosystem
+type Ecosystem int32
 
 // Dependency represents a generic dependency structure
-//
-// Deprecated: moved to pkg/v1/types
-type Dependency = v1.Dependency
+type Dependency struct {
+	Name      string
+	Version   string
+	Ecosystem Ecosystem
+}
 
 const (
 	// ECOSYSTEM_NPM identifies the NPM ecosystem
-	//
-	// Deprecated: moved to pkg/v1/types
-	ECOSYSTEM_NPM Ecosystem = v1.ECOSYSTEM_NPM
+	ECOSYSTEM_NPM Ecosystem = 1
 
 	// ECOSYSTEM_GO identifies the Go language
-	//
-	// Deprecated: moved to pkg/v1/types
-	ECOSYSTEM_GO Ecosystem = v1.ECOSYSTEM_GO
+	ECOSYSTEM_GO Ecosystem = 2
 
 	// ECOSYSTEM_PYPI identifies the Python Package Index
-	//
-	// Deprecated: moved to pkg/v1/types
-	ECOSYSTEM_PYPI Ecosystem = v1.ECOSYSTEM_PYPI
+	ECOSYSTEM_PYPI Ecosystem = 3
 
 	// IngestStatusFailed ingestion failed permanently
-	//
-	// Deprecated: moved to pkg/v1/types
-	IngestStatusFailed = v1.IngestStatusFailed
+	IngestStatusFailed = "failed"
 
 	// IngestStatusComplete means ingestion is done, data available
-	//
-	// Deprecated: moved to pkg/v1/types
-	IngestStatusComplete = v1.IngestStatusComplete
+	IngestStatusComplete = "complete"
 
 	// IngestStatusPending means that the ingestion process is waiting to start
-	//
-	// Deprecated: moved to pkg/v1/types
-	IngestStatusPending = v1.IngestStatusPending
+	IngestStatusPending = "pending"
 
 	// IngestStatusScoring means the scoring process is underway
-	//
-	// Deprecated: moved to pkg/v1/types
-	IngestStatusScoring = v1.IngestStatusScoring
+	IngestStatusScoring = "scoring"
 )
 
 // Ecosystems enumerates the supported ecosystems
-//
-// Deprecated: moved to pkg/v1/types
-var Ecosystems = v1.Ecosystems
+var Ecosystems = map[string]Ecosystem{
+	"ECOSYSTEM_NPM":  ECOSYSTEM_NPM,
+	"ECOSYSTEM_GO":   ECOSYSTEM_GO,
+	"ECOSYSTEM_PYPI": ECOSYSTEM_PYPI,
+}
+
+// AsString returns the string representation of the DepEcosystem
+func (ecosystem Ecosystem) AsString() string {
+	switch ecosystem {
+	case ECOSYSTEM_NPM:
+		return "npm"
+	case ECOSYSTEM_GO:
+		return "Go"
+	case ECOSYSTEM_PYPI:
+		return "PyPI"
+	default:
+		return ""
+	}
+}
 
 // ConvertDepsToMap converts a slice of Dependency structs to a map for easier comparison
-//
-// Deprecated: moved to pkg/v1/types
-var ConvertDepsToMap = v1.ConvertDepsToMap
+func ConvertDepsToMap(deps []Dependency) map[string]string {
+	depMap := make(map[string]string)
+	for _, dep := range deps {
+		depMap[dep.Name] = dep.Version
+	}
+	return depMap
+}
 
 // DiffDependencies compares two sets of dependencies (represented as maps) and finds what's added in newDeps.
-//
-// Deprecated: moved to pkg/v1/types
-var DiffDependencies = v1.DiffDependencies
+func DiffDependencies(oldDeps, newDeps map[string]string) map[string]string {
+	addedDeps := make(map[string]string)
+	for dep, version := range newDeps {
+		if _, exists := oldDeps[dep]; !exists {
+			addedDeps[dep] = version
+		}
+	}
+	return addedDeps
+}
