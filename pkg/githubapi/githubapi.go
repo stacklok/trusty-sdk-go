@@ -20,7 +20,7 @@ package githubapi
 import (
 	"context"
 
-	"github.com/google/go-github/v61/github" // Make sure to use the version of go-github you need
+	"github.com/google/go-github/v66/github" // Make sure to use the version of go-github you need
 	"golang.org/x/oauth2"
 )
 
