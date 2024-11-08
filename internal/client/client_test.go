@@ -25,7 +25,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/stacklok/trusty-sdk-go/pkg/v1/types"
+	v1types "github.com/stacklok/trusty-sdk-go/pkg/v1/types"
 )
 
 func newFakeClient() *fakeClient {
@@ -131,7 +131,7 @@ func TestReport(t *testing.T) {
 	t.Parallel()
 	respBody := `{"package_name":"requestts","package_type":"pypi", "package_data": { "status":"complete"} }`
 
-	testdep := &types.Dependency{
+	testdep := &v1types.Dependency{
 		Name:      "requestts",
 		Ecosystem: 1,
 	}
@@ -142,9 +142,9 @@ func TestReport(t *testing.T) {
 
 	for _, tc := range []struct {
 		name     string
-		dep      *types.Dependency
+		dep      *v1types.Dependency
 		prepare  func(*fakeClient)
-		expected *types.Reply
+		expected *v1types.Reply
 		mustErr  bool
 		options  *Options
 	}{
@@ -157,14 +157,14 @@ func TestReport(t *testing.T) {
 					Body:       buildReader(respBody),
 				})
 			},
-			expected: &types.Reply{
+			expected: &v1types.Reply{
 				PackageName: "requestts",
 				PackageType: "pypi",
 			},
 		},
 		{
 			name: "no-dep-name",
-			dep: &types.Dependency{
+			dep: &v1types.Dependency{
 				Ecosystem: 1,
 			},
 			prepare: func(_ *fakeClient) {},
@@ -172,7 +172,7 @@ func TestReport(t *testing.T) {
 		},
 		{
 			name: "no-dep-ecosystem",
-			dep: &types.Dependency{
+			dep: &v1types.Dependency{
 				Name: "test",
 			},
 			prepare: func(_ *fakeClient) {},
@@ -288,25 +288,25 @@ func TestGroupReport(t *testing.T) {
 	respBody1 := `{"package_name":"requestts","package_type":"pypi"}`
 	respBody2 := `{"package_name":"tensorflow","package_type":"pypi"}`
 
-	testdep1 := &types.Dependency{
+	testdep1 := &v1types.Dependency{
 		Name:      "requestts",
 		Ecosystem: 1,
 	}
-	testdep2 := &types.Dependency{
+	testdep2 := &v1types.Dependency{
 		Name:      "tensorflow",
 		Ecosystem: 1,
 	}
 
 	for _, tc := range []struct {
 		name     string
-		deps     []*types.Dependency
+		deps     []*v1types.Dependency
 		prepare  func(*fakeClient)
-		expected []*types.Reply
+		expected []*v1types.Reply
 		mustErr  bool
 	}{
 		{
 			name: "normal",
-			deps: []*types.Dependency{testdep1, testdep2},
+			deps: []*v1types.Dependency{testdep1, testdep2},
 			prepare: func(fc *fakeClient) {
 				fc.resps = append(fc.resps,
 					&http.Response{
@@ -319,7 +319,7 @@ func TestGroupReport(t *testing.T) {
 					},
 				)
 			},
-			expected: []*types.Reply{
+			expected: []*v1types.Reply{
 				{
 					PackageName: "requestts",
 					PackageType: "pypi",
@@ -333,7 +333,7 @@ func TestGroupReport(t *testing.T) {
 
 		{
 			name: "no-dep-name",
-			deps: []*types.Dependency{
+			deps: []*v1types.Dependency{
 				{Ecosystem: 1}, testdep1,
 			},
 			prepare: func(_ *fakeClient) {},
@@ -341,7 +341,7 @@ func TestGroupReport(t *testing.T) {
 		},
 		{
 			name: "no-dep-ecosystem",
-			deps: []*types.Dependency{
+			deps: []*v1types.Dependency{
 				{Name: "test"}, testdep1,
 			},
 			prepare: func(_ *fakeClient) {},
@@ -349,7 +349,7 @@ func TestGroupReport(t *testing.T) {
 		},
 		{
 			name: "http-fails",
-			deps: []*types.Dependency{testdep1},
+			deps: []*v1types.Dependency{testdep1},
 			prepare: func(fc *fakeClient) {
 				fc.errs = append(fc.errs, fmt.Errorf("fake error"))
 			},
@@ -357,7 +357,7 @@ func TestGroupReport(t *testing.T) {
 		},
 		{
 			name: "http-non-200",
-			deps: []*types.Dependency{testdep1, testdep2},
+			deps: []*v1types.Dependency{testdep1, testdep2},
 			prepare: func(fc *fakeClient) {
 				fc.resps = append(
 					fc.resps, &http.Response{
@@ -378,7 +378,7 @@ func TestGroupReport(t *testing.T) {
 		},
 		{
 			name: "bad-response-json",
-			deps: []*types.Dependency{testdep1, testdep2},
+			deps: []*v1types.Dependency{testdep1, testdep2},
 			prepare: func(fc *fakeClient) {
 				fc.resps = append(fc.resps,
 					&http.Response{
@@ -470,31 +470,31 @@ func TestPurlToDependency(t *testing.T) {
 	for _, tc := range []struct {
 		name     string
 		purl     string
-		expected *types.Dependency
+		expected *v1types.Dependency
 		mustErr  bool
 	}{
 		{
 			name:     "golang",
 			purl:     "pkg:golang/github.com/k8s.io/release@v1.0.8",
-			expected: &types.Dependency{Name: "github.com/k8s.io/release", Version: "v1.0.8", Ecosystem: types.ECOSYSTEM_GO},
+			expected: &v1types.Dependency{Name: "github.com/k8s.io/release", Version: "v1.0.8", Ecosystem: v1types.ECOSYSTEM_GO},
 			mustErr:  false,
 		},
 		{
 			name:     "pypi",
 			purl:     "pkg:pypi/requests@v1.2.3",
-			expected: &types.Dependency{Name: "requests", Version: "v1.2.3", Ecosystem: types.ECOSYSTEM_PYPI},
+			expected: &v1types.Dependency{Name: "requests", Version: "v1.2.3", Ecosystem: v1types.ECOSYSTEM_PYPI},
 			mustErr:  false,
 		},
 		{
 			name:     "npm",
 			purl:     "pkg:npm/%40react-stately/color@3.7.0",
-			expected: &types.Dependency{Name: "@react-stately/color", Version: "3.7.0", Ecosystem: types.ECOSYSTEM_NPM},
+			expected: &v1types.Dependency{Name: "@react-stately/color", Version: "3.7.0", Ecosystem: v1types.ECOSYSTEM_NPM},
 			mustErr:  false,
 		},
 		{
 			name:     "no-version",
 			purl:     "pkg:npm/%40react-stately/color",
-			expected: &types.Dependency{Name: "@react-stately/color", Version: "", Ecosystem: types.ECOSYSTEM_NPM},
+			expected: &v1types.Dependency{Name: "@react-stately/color", Version: "", Ecosystem: v1types.ECOSYSTEM_NPM},
 			mustErr:  false,
 		},
 		{
