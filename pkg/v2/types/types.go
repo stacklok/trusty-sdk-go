@@ -97,17 +97,17 @@ type SummaryDescription struct {
 type ProvenanceType string
 
 var (
-	// ProvenanceTypeVerifiedProvenance represents a fully
-	// verified provenance information.
-	ProvenanceTypeVerifiedProvenance ProvenanceType = "verified_provenance"
-	// ProvenanceTypeHistoricalProvenance represents a verified
-	// historical provenance information.
-	ProvenanceTypeHistoricalProvenance ProvenanceType = "historical_provenance_match"
+	// ProvenanceTypeVerified represents a fully verified
+	// provenance information.
+	ProvenanceTypeVerified ProvenanceType = "verified_provenance_match"
+	// ProvenanceTypeHistorical represents a verified historical
+	// provenance information.
+	ProvenanceTypeHistorical ProvenanceType = "historical_provenance_match"
 	// ProvenanceTypeUnknown represents no provenance information.
 	ProvenanceTypeUnknown ProvenanceType = "unknown"
 	// ProvenanceTypeMismatched represents conflicting provenance
 	// information.
-	ProvenanceTypeMismatched ProvenanceType = "mismatched"
+	ProvenanceTypeMismatched ProvenanceType = "historical_provenance_mismatched"
 )
 
 //nolint:revive
@@ -118,13 +118,13 @@ func (t *ProvenanceType) UnmarshalJSON(data []byte) error {
 	}
 
 	switch tmp {
-	case "verified_provenance":
-		*t = ProvenanceTypeVerifiedProvenance
+	case "verified_provenance_match":
+		*t = ProvenanceTypeVerified
 	case "historical_provenance_match":
-		*t = ProvenanceTypeHistoricalProvenance
+		*t = ProvenanceTypeHistorical
 	case "unknown":
 		*t = ProvenanceTypeUnknown
-	case "mismatched":
+	case "historical_provenance_mismatched":
 		*t = ProvenanceTypeMismatched
 	default:
 		return fmt.Errorf("invalid provenance type: %s", tmp)
@@ -317,4 +317,31 @@ type PackageBasicInfo struct {
 	RepoDescription *string      `json:"repo_description"`
 	Score           *float64     `json:"score"`
 	IsMalicious     bool         `json:"is_malicious"`
+}
+
+// Provenance contains details about historical or cryptographically
+// verifiable provenance.
+type Provenance struct {
+	Historical HistoricalProvenance `json:"hp"`
+	Sigstore   SigstoreProvenance   `json:"sigstore"`
+	Sore       *float64             `json:"score"`
+}
+
+// HistoricalProvenance contains the number of tags in the repo, the
+// number of versions of the package, a count of the common tags and
+// the ratio of tags to common as overlap.
+type HistoricalProvenance struct {
+	Overlap  float64 `json:"overlap"`  // 92.23300970873787
+	Common   float64 `json:"common"`   // 95.0
+	Tags     float64 `json:"tags"`     // 103.0
+	Versions float64 `json:"versions"` // 152.0
+}
+
+// SigstoreProvenance contains details about Sigstore provenance.
+type SigstoreProvenance struct {
+	SourceRepo   string `json:"source_repo"`
+	Workflow     string `json:"workflow"`
+	Issuer       string `json:"issuer"`
+	TokenIssuer  string `json:"token_issuer"`
+	Transparency string `json:"transparency"`
 }

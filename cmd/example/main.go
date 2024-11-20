@@ -50,6 +50,11 @@ func main() {
 			fmt.Fprintf(os.Stderr, "error calling endpoint: %s\n", err)
 			os.Exit(1)
 		}
+	case "provenance":
+		if err := provenance(ctx, client, pname); err != nil {
+			fmt.Fprintf(os.Stderr, "error calling endpoint: %s\n", err)
+			os.Exit(1)
+		}
 	case "":
 		fmt.Fprintf(os.Stderr, "endpoint is mandatory\n")
 		os.Exit(1)
@@ -90,6 +95,18 @@ func pkg(ctx context.Context, client v2client.Trusty, pname string) error {
 
 func alternatives(ctx context.Context, client v2client.Trusty, pname string) error {
 	res, err := client.Alternatives(ctx, &v2types.Dependency{
+		PackageName: pname,
+	})
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("%+v\n", res)
+	return nil
+}
+
+func provenance(ctx context.Context, client v2client.Trusty, pname string) error {
+	res, err := client.Provenance(ctx, &v2types.Dependency{
 		PackageName: pname,
 	})
 	if err != nil {

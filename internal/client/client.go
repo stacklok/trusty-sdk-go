@@ -325,6 +325,7 @@ const (
 	v2SummaryPath  = "v2/summary"
 	v2PkgPath      = "v2/pkg"
 	v2Alternatives = "v2/alternatives"
+	v2Provenance   = "v2/provenance"
 )
 
 // Summary fetches a summary of Security Signal information
@@ -417,6 +418,36 @@ func (t *Trusty) Alternatives(
 	u.RawQuery = q.Encode()
 
 	return doRequest[v2types.PackageAlternatives](t.Options.HttpClient, u.String())
+}
+
+// Provenance fetches detailed provenance information of a given
+// package.
+func (t *Trusty) Provenance(
+	_ context.Context,
+	dep *v2types.Dependency,
+) (*v2types.Provenance, error) {
+	if dep.PackageName == "" {
+		return nil, fmt.Errorf("dependency has no name defined")
+	}
+
+	u, err := urlFor(t.Options.BaseURL, v2Provenance)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
+	}
+
+	// Add query parameters for package_name, package_type, and
+	// package_version.
+	q := u.Query()
+	q.Set("package_name", dep.PackageName)
+	if dep.PackageType != nil && *dep.PackageType != "" {
+		q.Set("package_type", strings.ToLower(*dep.PackageType))
+	}
+	if dep.PackageVersion != nil && *dep.PackageVersion != "" {
+		q.Set("package_version", *dep.PackageVersion)
+	}
+	u.RawQuery = q.Encode()
+
+	return doRequest[v2types.Provenance](t.Options.HttpClient, u.String())
 }
 
 // doRequest only wraps (1) an HTTP GET issued to the given URL using
