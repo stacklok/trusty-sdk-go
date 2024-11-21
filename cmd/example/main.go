@@ -26,32 +26,38 @@ import (
 )
 
 func main() {
-	var endpoint, pname string
+	var endpoint, pname, ptype string
 	flag.StringVar(&endpoint, "endpoint", "", "Trusty API endpoint to call")
 	flag.StringVar(&pname, "pname", "", "Package name")
+	flag.StringVar(&ptype, "ptype", "", "Package type")
 	flag.Parse()
 
 	ctx := context.Background()
 	client := v2client.New()
 
+	input := &v2types.Dependency{
+		PackageName: pname,
+		PackageType: ptype,
+	}
+
 	switch endpoint {
 	case "summary":
-		if err := summary(ctx, client, pname); err != nil {
+		if err := summary(ctx, client, input); err != nil {
 			fmt.Fprintf(os.Stderr, "error calling endpoint: %s\n", err)
 			os.Exit(1)
 		}
 	case "pkg-meta":
-		if err := pkg(ctx, client, pname); err != nil {
+		if err := pkg(ctx, client, input); err != nil {
 			fmt.Fprintf(os.Stderr, "error calling endpoint: %s\n", err)
 			os.Exit(1)
 		}
 	case "alternatives":
-		if err := alternatives(ctx, client, pname); err != nil {
+		if err := alternatives(ctx, client, input); err != nil {
 			fmt.Fprintf(os.Stderr, "error calling endpoint: %s\n", err)
 			os.Exit(1)
 		}
 	case "provenance":
-		if err := provenance(ctx, client, pname); err != nil {
+		if err := provenance(ctx, client, input); err != nil {
 			fmt.Fprintf(os.Stderr, "error calling endpoint: %s\n", err)
 			os.Exit(1)
 		}
@@ -64,10 +70,12 @@ func main() {
 	}
 }
 
-func summary(ctx context.Context, client v2client.Trusty, pname string) error {
-	res, err := client.Summary(ctx, &v2types.Dependency{
-		PackageName: pname,
-	})
+func summary(
+	ctx context.Context,
+	client v2client.Trusty,
+	input *v2types.Dependency,
+) error {
+	res, err := client.Summary(ctx, input)
 	if err != nil {
 		return err
 	}
@@ -76,10 +84,12 @@ func summary(ctx context.Context, client v2client.Trusty, pname string) error {
 	return nil
 }
 
-func pkg(ctx context.Context, client v2client.Trusty, pname string) error {
-	res, err := client.PackageMetadata(ctx, &v2types.Dependency{
-		PackageName: pname,
-	})
+func pkg(
+	ctx context.Context,
+	client v2client.Trusty,
+	input *v2types.Dependency,
+) error {
+	res, err := client.PackageMetadata(ctx, input)
 	if err != nil {
 		return err
 	}
@@ -93,10 +103,12 @@ func pkg(ctx context.Context, client v2client.Trusty, pname string) error {
 	return nil
 }
 
-func alternatives(ctx context.Context, client v2client.Trusty, pname string) error {
-	res, err := client.Alternatives(ctx, &v2types.Dependency{
-		PackageName: pname,
-	})
+func alternatives(
+	ctx context.Context,
+	client v2client.Trusty,
+	input *v2types.Dependency,
+) error {
+	res, err := client.Alternatives(ctx, input)
 	if err != nil {
 		return err
 	}
@@ -105,10 +117,12 @@ func alternatives(ctx context.Context, client v2client.Trusty, pname string) err
 	return nil
 }
 
-func provenance(ctx context.Context, client v2client.Trusty, pname string) error {
-	res, err := client.Provenance(ctx, &v2types.Dependency{
-		PackageName: pname,
-	})
+func provenance(
+	ctx context.Context,
+	client v2client.Trusty,
+	input *v2types.Dependency,
+) error {
+	res, err := client.Provenance(ctx, input)
 	if err != nil {
 		return err
 	}

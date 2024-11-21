@@ -28,7 +28,7 @@ import (
 // Dependency represents request arguments for various endpoints.
 type Dependency struct {
 	PackageName    string
-	PackageType    *string
+	PackageType    string
 	PackageVersion *string
 }
 
