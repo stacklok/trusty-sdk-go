@@ -33,6 +33,7 @@ type Trusty interface {
 	Summary(context.Context, *types.Dependency) (*types.PackageSummaryAnnotation, error)
 	PackageMetadata(context.Context, *types.Dependency) (*types.TrustyPackageData, error)
 	Alternatives(context.Context, *types.Dependency) (*types.PackageAlternatives, error)
+	Provenance(context.Context, *types.Dependency) (*types.Provenance, error)
 }
 
 // New returns a new Trusty REST client

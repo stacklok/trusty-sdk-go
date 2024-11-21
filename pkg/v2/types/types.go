@@ -28,7 +28,7 @@ import (
 // Dependency represents request arguments for various endpoints.
 type Dependency struct {
 	PackageName    string
-	PackageType    *string
+	PackageType    string
 	PackageVersion *string
 }
 
@@ -52,7 +52,7 @@ type PackageSummaryAnnotation struct {
 // changes to `"complete"` once processed.
 type Status string
 
-var (
+const (
 	// StatusInProgress represents a package being processed.
 	StatusInProgress Status = "in_progress"
 	// StatusComplete represents an already processed package.
@@ -67,9 +67,9 @@ func (t *Status) UnmarshalJSON(data []byte) error {
 	}
 
 	switch tmp {
-	case "in_progress":
+	case string(StatusInProgress):
 		*t = StatusInProgress
-	case "complete":
+	case string(StatusComplete):
 		*t = StatusComplete
 	default:
 		return fmt.Errorf("invalid status type: %s", tmp)
@@ -96,18 +96,18 @@ type SummaryDescription struct {
 // was able to gather.
 type ProvenanceType string
 
-var (
-	// ProvenanceTypeVerifiedProvenance represents a fully
-	// verified provenance information.
-	ProvenanceTypeVerifiedProvenance ProvenanceType = "verified_provenance"
-	// ProvenanceTypeHistoricalProvenance represents a verified
-	// historical provenance information.
-	ProvenanceTypeHistoricalProvenance ProvenanceType = "historical_provenance_match"
+const (
+	// ProvenanceTypeVerified represents a fully verified
+	// provenance information.
+	ProvenanceTypeVerified ProvenanceType = "verified_provenance_match"
+	// ProvenanceTypeHistorical represents a verified historical
+	// provenance information.
+	ProvenanceTypeHistorical ProvenanceType = "historical_provenance_match"
 	// ProvenanceTypeUnknown represents no provenance information.
 	ProvenanceTypeUnknown ProvenanceType = "unknown"
 	// ProvenanceTypeMismatched represents conflicting provenance
 	// information.
-	ProvenanceTypeMismatched ProvenanceType = "mismatched"
+	ProvenanceTypeMismatched ProvenanceType = "historical_provenance_mismatched"
 )
 
 //nolint:revive
@@ -118,13 +118,13 @@ func (t *ProvenanceType) UnmarshalJSON(data []byte) error {
 	}
 
 	switch tmp {
-	case "verified_provenance":
-		*t = ProvenanceTypeVerifiedProvenance
-	case "historical_provenance_match":
-		*t = ProvenanceTypeHistoricalProvenance
-	case "unknown":
+	case string(ProvenanceTypeVerified):
+		*t = ProvenanceTypeVerified
+	case string(ProvenanceTypeHistorical):
+		*t = ProvenanceTypeHistorical
+	case string(ProvenanceTypeUnknown):
 		*t = ProvenanceTypeUnknown
-	case "mismatched":
+	case string(ProvenanceTypeMismatched):
 		*t = ProvenanceTypeMismatched
 	default:
 		return fmt.Errorf("invalid provenance type: %s", tmp)
@@ -141,7 +141,7 @@ type PackageType string
 // as they're added to Trusty. The downside of this is that sdk users
 // must match new types manually until we add the case to the list.
 
-var (
+const (
 	// PackageTypePypi is the ecosystem of Python packages.
 	PackageTypePypi PackageType = "pypi"
 	// PackageTypeNpm is the ecosystem of JavaScript packages.
@@ -158,7 +158,7 @@ var (
 // repository.
 type PackageStatus string
 
-var (
+const (
 	// PackageStatusPending represents status pending
 	PackageStatusPending PackageStatus = "pending"
 	// PackageStatusInitial represents status initial
@@ -185,21 +185,21 @@ func (t *PackageStatus) UnmarshalJSON(data []byte) error {
 	}
 
 	switch tmp {
-	case "pending":
+	case string(PackageStatusPending):
 		*t = PackageStatusPending
-	case "initial":
+	case string(PackageStatusInitial):
 		*t = PackageStatusInitial
-	case "neighbours":
+	case string(PackageStatusNeighbours):
 		*t = PackageStatusNeighbours
-	case "complete":
+	case string(PackageStatusComplete):
 		*t = PackageStatusComplete
-	case "failed":
+	case string(PackageStatusFailed):
 		*t = PackageStatusFailed
-	case "scoring":
+	case string(PackageStatusScoring):
 		*t = PackageStatusScoring
-	case "propagate":
+	case string(PackageStatusPropagate):
 		*t = PackageStatusPropagate
-	case "deleted":
+	case string(PackageStatusDeleted):
 		*t = PackageStatusDeleted
 	default:
 		return fmt.Errorf("invalid package status type: %s", tmp)
@@ -317,4 +317,31 @@ type PackageBasicInfo struct {
 	RepoDescription *string      `json:"repo_description"`
 	Score           *float64     `json:"score"`
 	IsMalicious     bool         `json:"is_malicious"`
+}
+
+// Provenance contains details about historical or cryptographically
+// verifiable provenance.
+type Provenance struct {
+	Historical HistoricalProvenance `json:"hp"`
+	Sigstore   SigstoreProvenance   `json:"sigstore"`
+	Sore       *float64             `json:"score"`
+}
+
+// HistoricalProvenance contains the number of tags in the repo, the
+// number of versions of the package, a count of the common tags and
+// the ratio of tags to common as overlap.
+type HistoricalProvenance struct {
+	Overlap  float64 `json:"overlap"`  // 92.23300970873787
+	Common   float64 `json:"common"`   // 95.0
+	Tags     float64 `json:"tags"`     // 103.0
+	Versions float64 `json:"versions"` // 152.0
+}
+
+// SigstoreProvenance contains details about Sigstore provenance.
+type SigstoreProvenance struct {
+	SourceRepo   string `json:"source_repo"`
+	Workflow     string `json:"workflow"`
+	Issuer       string `json:"issuer"`
+	TokenIssuer  string `json:"token_issuer"`
+	Transparency string `json:"transparency"`
 }
