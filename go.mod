@@ -11,10 +11,11 @@ require (
 	github.com/package-url/packageurl-go v0.1.3
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/oauth2 v0.25.0
-	sigs.k8s.io/release-utils v0.9.0
+	sigs.k8s.io/release-utils v0.11.0
 )
 
 require (
+	github.com/avast/retry-go/v4 v4.6.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
