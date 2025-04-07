@@ -1,8 +1,7 @@
 module github.com/stacklok/trusty-sdk-go
 
 go 1.23
-
-toolchain go1.23.1
+toolchain go1.24.1
 
 require (
 	github.com/BurntSushi/toml v1.4.0
@@ -10,7 +9,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/package-url/packageurl-go v0.1.3
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/oauth2 v0.26.0
+	golang.org/x/oauth2 v0.29.0
 	sigs.k8s.io/release-utils v0.11.0
 )
 
